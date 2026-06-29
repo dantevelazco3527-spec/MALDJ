@@ -1211,12 +1211,17 @@ document.getElementById('edit-modal').addEventListener('click', function(e) {
 const STORAGE_KEY = 'boblox_source_override';
 
 function openSecretPanel() {
-  // Pide la contraseña antes de abrir
   const pwd = prompt("Introduce la contraseña para el editor:");
-  if (pwd !== 'deday') { // Cambia 'deday' por tu contraseña real
+  if (pwd !== 'DEDAY') { 
     alert("Contraseña incorrecta");
     return;
   }
+  
+  document.getElementById('secret-panel').classList.add('open');
+  const src = localStorage.getItem(STORAGE_KEY) || document.documentElement.outerHTML;
+  document.getElementById('source-editor').value = src;
+  document.getElementById('secret-status').textContent = '';
+}
   
   document.getElementById('secret-panel').classList.add('open');
   const src = localStorage.getItem(STORAGE_KEY) || document.documentElement.outerHTML;
@@ -1227,7 +1232,6 @@ function openSecretPanel() {
 function closeSecretPanel() {
   document.getElementById('secret-panel').classList.remove('open');
 }
-// ... (mantiene el resto de funciones: saveSourceCode, applySourceNow, resetSource y la función autoejecutable igual)
 
 function openSecretPanel() {
   document.getElementById('secret-panel').classList.add('open');

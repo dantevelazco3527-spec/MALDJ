@@ -1209,59 +1209,66 @@ document.getElementById('edit-modal').addEventListener('click', function(e) {
 //  PANEL SECRETO — código fuente
 // ─────────────────────────────────────────
 const STORAGE_KEY = 'boblox_source_override';
-const STORAGE_KEY = 'boblox_source_override';
 
 function openSecretPanel() {
-  document.getElementById('secret-panel').classList.add('open');
-  // Cargar el código fuente actual de la página en el editor
-  const src = localStorage.getItem(STORAGE_KEY) || document.documentElement.outerHTML;
-  document.getElementById('source-editor').value = src;
-  document.getElementById('secret-status').textContent = '';
+    const panel = document.getElementById('secret-panel');
+    if (panel) panel.classList.add('open');
+    // Cargar el código fuente actual
+    const src = localStorage.getItem(STORAGE_KEY) || document.documentElement.outerHTML;
+    const editor = document.getElementById('source-editor');
+    if (editor) editor.value = src;
+    const status = document.getElementById('secret-status');
+    if (status) status.textContent = '';
 }
-function showSecretPanel( ) {
-	document.getElementById('secret-panel').classList.open('open');
-}	
+
+function showSecretPanel() {
+    // CORREGIDO: Usar .add() en lugar de .open()
+    const panel = document.getElementById('secret-panel');
+    if (panel) panel.classList.add('open');
 }
+
 function closeSecretPanel() {
-  document.getElementById('secret-panel').classList.remove('open');
+    const panel = document.getElementById('secret-panel');
+    if (panel) panel.classList.remove('open');
 }
 
 function saveSourceCode() {
-  const newCode = document.getElementById('source-editor').value.trim();
-  if (!newCode) return;
-  localStorage.setItem(STORAGE_KEY, newCode);
-  document.getElementById('secret-status').textContent = '✅ Guardado. Recarga la página para ver los cambios.';
+    const editor = document.getElementById('source-editor');
+    const newCode = editor ? editor.value.trim() : '';
+    if (!newCode) return;
+    localStorage.setItem(STORAGE_KEY, newCode);
+    const status = document.getElementById('secret-status');
+    if (status) status.textContent = '✅ Guardado.';
 }
 
 function applySourceNow() {
-  const newCode = document.getElementById('source-editor').value.trim();
-  if (!newCode) return;
-  localStorage.setItem(STORAGE_KEY, newCode);
-  document.open();
-  document.write(newCode);
-  document.close();
+    const editor = document.getElementById('source-editor');
+    const newCode = editor ? editor.value.trim() : '';
+    if (!newCode) return;
+    localStorage.setItem(STORAGE_KEY, newCode);
+    document.open();
+    document.write(newCode);
+    document.close();
 }
 
 function resetSource() {
-  if (!confirm('¿Borrar los cambios guardados y volver al código original?')) return;
-  localStorage.removeItem(STORAGE_KEY);
-  document.getElementById('secret-status').textContent = '🗑️ Cambios borrados. Recarga para restaurar.';
+    if (!confirm('¿Borrar los cambios guardados y volver al original?')) return;
+    localStorage.removeItem(STORAGE_KEY);
+    const status = document.getElementById('secret-status');
+    if (status) status.textContent = '🗑️ Cambios borrados.';
 }
 
-// Al cargar la página, aplicar código guardado si existe
+// Aplicar código al cargar
 (function() {
-  const saved = localStorage.getItem(STORAGE_KEY);
-  if (saved) {
-    // Solo aplicar si no estamos ya en la versión guardada (evita loop)
-    const marker = '<!-- boblox-saved -->';
-    if (!document.documentElement.outerHTML.includes(marker) && saved.includes(marker)) {
-      document.open();
-      document.write(saved);
-      document.close();
+    const saved = localStorage.getItem(STORAGE_KEY);
+    const marker = '';
+    if (saved && !document.documentElement.outerHTML.includes(marker) && saved.includes(marker)) {
+        document.open();
+        document.write(saved);
+        document.close();
     }
-  }
 })();
-</script>
+  
 <!-- ══════════════ PANEL SECRETO ══════════════ -->
 <style>
   #secret-panel {

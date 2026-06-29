@@ -1209,29 +1209,7 @@ document.getElementById('edit-modal').addEventListener('click', function(e) {
 //  PANEL SECRETO — código fuente
 // ─────────────────────────────────────────
 const STORAGE_KEY = 'boblox_source_override';
-
-function openSecretPanel() {
-  const pwd = prompt("Introduce la contraseña para el editor:");
-  if (pwd !== 'DEDAY') { 
-    alert("Contraseña incorrecta");
-    return;
-  }
-  
-  document.getElementById('secret-panel').classList.add('open');
-  const src = localStorage.getItem(STORAGE_KEY) || document.documentElement.outerHTML;
-  document.getElementById('source-editor').value = src;
-  document.getElementById('secret-status').textContent = '';
-}
-  
-  document.getElementById('secret-panel').classList.add('open');
-  const src = localStorage.getItem(STORAGE_KEY) || document.documentElement.outerHTML;
-  document.getElementById('source-editor').value = src;
-  document.getElementById('secret-status').textContent = '';
-}
-
-function closeSecretPanel() {
-  document.getElementById('secret-panel').classList.remove('open');
-}
+const STORAGE_KEY = 'boblox_source_override';
 
 function openSecretPanel() {
   document.getElementById('secret-panel').classList.add('open');
@@ -1240,7 +1218,10 @@ function openSecretPanel() {
   document.getElementById('source-editor').value = src;
   document.getElementById('secret-status').textContent = '';
 }
-
+function showSecretPanel( ) {
+	document.getElementById('secret-panel').classList.open('open');
+}	
+}
 function closeSecretPanel() {
   document.getElementById('secret-panel').classList.remove('open');
 }
@@ -1281,7 +1262,6 @@ function resetSource() {
   }
 })();
 </script>
-
 <!-- ══════════════ PANEL SECRETO ══════════════ -->
 <style>
   #secret-panel {

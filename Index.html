@@ -1,0 +1,1373 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Juegos del Boblox Oullea</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@700;800&display=swap');
+
+  :root {
+    --bg: #0d0d14;
+    --bg2: #13131f;
+    --bg3: #1a1a2e;
+    --card: #1e1e30;
+    --border: #2e2e4a;
+    --accent: #7c3aed;
+    --accent2: #a855f7;
+    --green: #22c55e;
+    --red: #ef4444;
+    --orange: #f97316;
+    --yellow: #eab308;
+    --text: #e2e0ff;
+    --muted: #8b87b0;
+    --white: #f5f3ff;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Space Grotesk', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ─── PANTALLA DE LOGIN ─── */
+  #login-screen {
+    position: fixed; inset: 0; z-index: 9999;
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 28px;
+  }
+
+  .login-logo {
+    font-family: 'Syne', sans-serif;
+    font-size: 2.2rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #a855f7, #7c3aed, #6366f1);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-align: center;
+    line-height: 1.1;
+    letter-spacing: -1px;
+  }
+
+  .login-sub {
+    color: var(--muted);
+    font-size: 0.85rem;
+    text-align: center;
+    letter-spacing: 0.05em;
+  }
+
+  .login-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    width: min(360px, 90vw);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .login-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  .login-input {
+    width: 100%;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--white);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1rem;
+    padding: 12px 16px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .login-input:focus { border-color: var(--accent2); }
+
+  .login-btn {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border: none;
+    border-radius: 10px;
+    color: #fff;
+    cursor: pointer;
+    font-family: 'Syne', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    padding: 13px;
+    transition: opacity 0.2s, transform 0.1s;
+    letter-spacing: 0.03em;
+  }
+  .login-btn:hover { opacity: 0.9; }
+  .login-btn:active { transform: scale(0.98); }
+
+  .login-error {
+    color: var(--red);
+    font-size: 0.82rem;
+    text-align: center;
+    min-height: 18px;
+  }
+
+  /* ─── PANTALLA DE INTRO ─── */
+  #intro-screen {
+    position: fixed; inset: 0; z-index: 9998;
+    background: var(--bg);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    text-align: center;
+    padding: 32px;
+  }
+
+  .intro-badge {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent2);
+    border: 1px solid var(--accent);
+    border-radius: 999px;
+    padding: 4px 14px;
+    opacity: 0;
+    animation: fadeUp 0.6s 0.2s forwards;
+  }
+
+  .intro-title {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(2rem, 6vw, 3.4rem);
+    font-weight: 800;
+    background: linear-gradient(135deg, #f5f3ff, #a855f7, #6366f1);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    line-height: 1.05;
+    letter-spacing: -1.5px;
+    opacity: 0;
+    animation: fadeUp 0.6s 0.45s forwards;
+  }
+
+  .intro-text {
+    color: var(--muted);
+    font-size: 1rem;
+    line-height: 1.65;
+    max-width: 480px;
+    opacity: 0;
+    animation: fadeUp 0.6s 0.7s forwards;
+  }
+
+  .intro-text strong { color: var(--text); }
+
+  .intro-enter {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border: none;
+    border-radius: 12px;
+    color: #fff;
+    cursor: pointer;
+    font-family: 'Syne', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    padding: 14px 36px;
+    margin-top: 8px;
+    transition: opacity 0.2s, transform 0.1s;
+    opacity: 0;
+    animation: fadeUp 0.6s 0.95s forwards;
+  }
+  .intro-enter:hover { opacity: 0.9; }
+  .intro-enter:active { transform: scale(0.97); }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ─── APP PRINCIPAL ─── */
+  #app { display: none; min-height: 100vh; flex-direction: column; }
+
+  /* Header */
+  .header {
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .header-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.15rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #a855f7, #6366f1);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .header-logout {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--muted);
+    cursor: pointer;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.8rem;
+    padding: 6px 12px;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .header-logout:hover { border-color: var(--accent2); color: var(--text); }
+
+  /* Tabs */
+  .tabs {
+    display: flex;
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    gap: 0;
+  }
+
+  .tab-btn {
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--muted);
+    cursor: pointer;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    padding: 14px 20px;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active { color: var(--accent2); border-bottom-color: var(--accent2); }
+
+  /* Content */
+  .content { padding: 28px 24px; max-width: 900px; margin: 0 auto; width: 100%; }
+
+  .tab-pane { display: none; }
+  .tab-pane.active { display: block; }
+
+  /* ─── PESTAÑA: JUEGOS ─── */
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: var(--white);
+  }
+
+  .section-count {
+    font-size: 0.78rem;
+    color: var(--muted);
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 4px 12px;
+  }
+
+  .filter-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+
+  .filter-btn {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--muted);
+    cursor: pointer;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 6px 14px;
+    transition: all 0.2s;
+  }
+  .filter-btn:hover { border-color: var(--accent2); color: var(--text); }
+  .filter-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+  .games-list { display: flex; flex-direction: column; gap: 14px; }
+
+  .game-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    position: relative;
+    transition: border-color 0.2s;
+  }
+  .game-card:hover { border-color: var(--accent); }
+
+  .game-card.played { border-left: 3px solid var(--green); }
+  .game-card.not-played { border-left: 3px solid var(--red); }
+
+  .game-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+
+  .game-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--white);
+    line-height: 1.2;
+  }
+
+  .game-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+  .btn-icon {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 0.9rem;
+    padding: 6px 9px;
+    transition: all 0.2s;
+  }
+  .btn-icon:hover { border-color: var(--accent2); color: var(--text); }
+
+  .game-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+
+  .badge {
+    font-size: 0.72rem;
+    font-weight: 600;
+    border-radius: 6px;
+    padding: 3px 9px;
+    letter-spacing: 0.03em;
+  }
+  .badge-genre { background: rgba(124,58,237,0.2); color: #c4b5fd; border: 1px solid rgba(124,58,237,0.3); }
+  .badge-played { background: rgba(34,197,94,0.15); color: #86efac; border: 1px solid rgba(34,197,94,0.3); }
+  .badge-unplayed { background: rgba(239,68,68,0.15); color: #fca5a5; border: 1px solid rgba(239,68,68,0.3); }
+  .badge-warning { background: rgba(234,179,8,0.15); color: #fde047; border: 1px solid rgba(234,179,8,0.3); }
+  .badge-nosolo { background: rgba(249,115,22,0.15); color: #fed7aa; border: 1px solid rgba(249,115,22,0.3); }
+
+  .game-desc {
+    font-size: 0.88rem;
+    color: var(--muted);
+    line-height: 1.55;
+    margin-bottom: 8px;
+  }
+
+  .game-opinion {
+    font-size: 0.83rem;
+    color: #c4b5fd;
+    font-style: italic;
+    border-left: 2px solid var(--accent);
+    padding-left: 10px;
+    margin-bottom: 8px;
+  }
+
+  .game-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+  }
+
+  .game-recommender {
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+  .game-recommender span { color: var(--accent2); font-weight: 600; }
+
+  .game-link {
+    font-size: 0.75rem;
+    color: var(--accent2);
+    text-decoration: none;
+    transition: opacity 0.2s;
+  }
+  .game-link:hover { opacity: 0.7; }
+
+  .empty-state {
+    text-align: center;
+    color: var(--muted);
+    padding: 60px 20px;
+  }
+  .empty-icon { font-size: 2.5rem; margin-bottom: 12px; }
+  .empty-text { font-size: 0.9rem; line-height: 1.6; }
+
+  /* ─── MODAL DE EDICIÓN ─── */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 500;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    width: min(560px, 100%);
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .modal-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--white);
+  }
+
+  .modal-close {
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 1.3rem;
+    transition: color 0.2s;
+  }
+  .modal-close:hover { color: var(--text); }
+
+  /* ─── FORMULARIO COMPARTIDO ─── */
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+
+  .form-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .form-label .required { color: var(--accent2); margin-left: 2px; }
+  .form-label .optional {
+    color: var(--muted);
+    font-size: 0.68rem;
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: 0;
+    margin-left: 4px;
+  }
+
+  .form-input, .form-select, .form-textarea {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--white);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.92rem;
+    outline: none;
+    padding: 11px 14px;
+    transition: border-color 0.2s;
+    width: 100%;
+  }
+  .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--accent2); }
+  .form-textarea { min-height: 80px; resize: vertical; }
+  .form-select option { background: var(--bg2); }
+
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+  .form-hint {
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  .checkbox-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 11px 14px;
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+  .checkbox-group:hover { border-color: var(--accent2); }
+  .checkbox-group input { cursor: pointer; accent-color: var(--accent2); width: 16px; height: 16px; }
+  .checkbox-group label { cursor: pointer; font-size: 0.9rem; color: var(--text); }
+
+  .form-actions { display: flex; gap: 10px; justify-content: flex-end; }
+
+  .btn-cancel {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--muted);
+    cursor: pointer;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    padding: 11px 22px;
+    transition: all 0.2s;
+  }
+  .btn-cancel:hover { border-color: var(--accent2); color: var(--text); }
+
+  .btn-submit {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border: none;
+    border-radius: 10px;
+    color: #fff;
+    cursor: pointer;
+    font-family: 'Syne', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    padding: 11px 28px;
+    transition: opacity 0.2s, transform 0.1s;
+  }
+  .btn-submit:hover { opacity: 0.9; }
+  .btn-submit:active { transform: scale(0.97); }
+
+  /* ─── PESTAÑA RECOMENDAR ─── */
+  .rec-intro {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    font-size: 0.85rem;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+  .rec-intro strong { color: var(--accent2); }
+
+  .rec-form {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--card);
+    border: 1px solid var(--green);
+    border-radius: 12px;
+    color: #86efac;
+    font-size: 0.88rem;
+    font-weight: 600;
+    padding: 12px 20px;
+    z-index: 9999;
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all 0.3s;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.error { border-color: var(--red); color: #fca5a5; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg2); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+  @media (max-width: 500px) {
+    .form-row { grid-template-columns: 1fr; }
+    .content { padding: 20px 16px; }
+    .header { padding: 12px 16px; }
+    .tabs { padding: 0 12px; }
+    .tab-btn { padding: 12px 14px; font-size: 0.82rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════ LOGIN ══════════════ -->
+<div id="login-screen">
+  <div class="login-logo">Juegos del<br>Boblox Oullea 🎮</div>
+  <div class="login-sub">Creación original · Migajeros Anónimos</div>
+  <div class="login-box">
+    <div class="form-group">
+      <label class="form-label">Contraseña</label>
+      <input id="pwd-input" type="password" class="login-input" placeholder="••••••••" />
+    </div>
+    <div class="login-error" id="login-error"></div>
+    <button class="login-btn" onclick="checkLogin()">Entrar 🔥</button>
+  </div>
+</div>
+
+<!-- ══════════════ INTRO ══════════════ -->
+<div id="intro-screen">
+  <div class="intro-badge">Migajeros Anónimos · Doc oficial</div>
+  <div class="intro-title">Hallo malditos 🗣🔥</div>
+  <div class="intro-text">
+    Bienvenidos al doc de los juegos del <strong>Boblox oullea</strong>.<br><br>
+    Aquí guardamos todos los juegos que se recomiendan en los grupos de TikTok e Instagram para mantener un registro de qué queremos jugar, o pa cuando nos quedemos sin ideas.<br><br>
+    <strong>Recuerden:</strong> intenten que los juegos sean <strong>multiplataforma</strong> pa que nadie se quede fuera del desvergue 🎮
+  </div>
+  <button class="intro-enter" onclick="enterApp()">Dale, pa dentro ▶</button>
+</div>
+
+<!-- ══════════════ APP ══════════════ -->
+<div id="app">
+  <header class="header">
+    <div class="header-title">Boblox Oullea 🎮</div>
+    <button class="header-logout" onclick="logout()">Salir</button>
+  </header>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('games', this)">🎮 Juegos</button>
+    <button class="tab-btn" onclick="switchTab('rec', this)">➕ Recomendar juego</button>
+  </div>
+
+  <div class="content">
+
+    <!-- ── JUEGOS ── -->
+    <div id="tab-games" class="tab-pane active">
+      <div class="section-header">
+        <div class="section-title">Lista de juegos</div>
+        <div class="section-count" id="games-count">0 juegos</div>
+      </div>
+
+      <div class="filter-row">
+        <button class="filter-btn active" onclick="setFilter('all', this)">Todos</button>
+        <button class="filter-btn" onclick="setFilter('played', this)">✅ Jugados</button>
+        <button class="filter-btn" onclick="setFilter('unplayed', this)">⏳ Sin jugar</button>
+        <button class="filter-btn" onclick="setFilter('accion', this)">⚔️ Acción</button>
+        <button class="filter-btn" onclick="setFilter('aventura', this)">🗺️ Aventura</button>
+        <button class="filter-btn" onclick="setFilter('carreras', this)">🏎️ Carreras</button>
+        <button class="filter-btn" onclick="setFilter('disparos', this)">🔫 Disparos</button>
+        <button class="filter-btn" onclick="setFilter('escape', this)">🚪 Escape</button>
+        <button class="filter-btn" onclick="setFilter('horror', this)">👻 Horror</button>
+        <button class="filter-btn" onclick="setFilter('horrorpsico', this)">🧠 Horror psicológico</button>
+        <button class="filter-btn" onclick="setFilter('magnate', this)">💰 Magnate</button>
+        <button class="filter-btn" onclick="setFilter('simulador', this)">🏗️ Simulador</button>
+        <button class="filter-btn" onclick="setFilter('supervivencia', this)">🛡️ Supervivencia</button>
+        <button class="filter-btn" onclick="setFilter('misterio', this)">🔍 Misterio</button>
+      </div>
+
+      <div class="games-list" id="games-list"></div>
+    </div>
+
+    <!-- ── RECOMENDAR ── -->
+    <div id="tab-rec" class="tab-pane">
+      <div class="section-title" style="margin-bottom:16px">Recomendar un juego</div>
+
+      <div class="rec-intro">
+        Los campos marcados con <strong style="color:#a855f7">*</strong> son <strong>obligatorios</strong>.
+        Los demás son opcionales pero ayudan a tener mejor info del juego 👌
+      </div>
+
+      <div class="rec-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Nombre del juego <span class="required">*</span></label>
+            <input type="text" class="form-input" id="r-name" placeholder="Ej: Item Asylum" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Género <span class="required">*</span></label>
+            <select class="form-select" id="r-genre">
+              <option value="">Selecciona...</option>
+              <option>Acción</option>
+              <option>Aventura</option>
+              <option>Carreras</option>
+              <option>Disparos</option>
+              <option>Escape</option>
+              <option>Horror</option>
+              <option>Horror psicológico</option>
+              <option>Magnate</option>
+              <option>Simulador</option>
+             <option>Supervivencia</option>
+             <option>Misterio</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Quién recomienda</label>
+        <input type="text" class="form-input" id="e-who" />
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Descripción</label>
+      <textarea class="form-textarea" id="e-desc"></textarea>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Opinión</label>
+      <textarea class="form-textarea" id="e-opinion" style="min-height:64px"></textarea>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Enlace fuente</label>
+      <input type="url" class="form-input" id="e-link" />
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Advertencias de contenido</label>
+      <input type="text" class="form-input" id="e-warn" />
+    </div>
+
+    <div class="checkbox-group">
+      <input type="checkbox" id="e-nosolo" />
+      <label for="e-nosolo">Puede que no tenga multijugador</label>
+    </div>
+
+    <div class="checkbox-group">
+      <input type="checkbox" id="e-played" />
+      <label for="e-played">Ya se ha jugado ✅</label>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn-cancel" onclick="closeEdit()">Cancelar</button>
+      <button class="btn-submit" onclick="saveEdit()">Guardar cambios</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ─────────────────────────────────────────
+//  CONTRASEÑA
+// ─────────────────────────────────────────
+const PASSWORD = "migajeros2025";
+let currentFilter = 'all';
+let editingId = null;
+
+function checkLogin() {
+  const val = document.getElementById('pwd-input').value;
+  if (val === PASSWORD) {
+    document.getElementById('login-screen').style.display = 'none';
+    showIntro();
+  } else {
+    const err = document.getElementById('login-error');
+    err.textContent = '❌ Contraseña incorrecta, tío';
+    document.getElementById('pwd-input').value = '';
+    setTimeout(() => err.textContent = '', 2500);
+  }
+}
+
+document.getElementById('pwd-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') checkLogin();
+});
+
+function logout() {
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('pwd-input').value = '';
+}
+
+// ─────────────────────────────────────────
+//  INTRO
+// ─────────────────────────────────────────
+function showIntro() {
+  const intro = document.getElementById('intro-screen');
+  intro.style.display = 'flex';
+}
+
+function enterApp() {
+  document.getElementById('intro-screen').style.display = 'none';
+  const app = document.getElementById('app');
+  app.style.display = 'flex';
+  renderGames();
+}
+
+// ─────────────────────────────────────────
+//  DATOS INICIALES (del documento)
+// ─────────────────────────────────────────
+let games = [
+  {
+    id: 1, name: "Weird Gun Game",
+    alias: "El de las armas cocainicas",
+    genre: "Disparos",
+    desc: "Balear gente con armas modificadas y super marihuanas.",
+    opinion: "Es un 10 para andar ondeado y para pasar el rato matándonos.",
+    who: "Dante", link: "", warning: "", nosolo: false, played: true
+  },
+  {
+    id: 2, name: "Brace / Apoyapies",
+    alias: "El de los carros de construir la pista",
+    genre: "Carreras",
+    desc: "Construir un circuito de carreras con muchas partes, power ups, y cosas para cagar el palo.",
+    opinion: "Es un 10 para andar cagandonos de risa y encabronarse por haber puesto las partes más ojetes a media carrera.",
+    who: "Dante", link: "", warning: "", nosolo: false, played: true
+  },
+  {
+    id: 3, name: "Item Asylum",
+    alias: "*saca una nuclear* ¡los amo padres! 🗣🔥",
+    genre: "Acción / Disparos",
+    desc: "Armas aleatorias bizarras bien rotas o super inútiles, con las que andamos pasándonos de pistache y matándonos.",
+    opinion: "Es un 10 si se traen ganas; si el ambiente está god es una cargadera de risa.",
+    who: "Dante", link: "", warning: "", nosolo: false, played: true
+  },
+  {
+    id: 4, name: "Sell Lemons",
+    alias: "Vende limones",
+    genre: "Magnate / Simulador",
+    desc: "Tener un imperio de vender limonada y ser el CEO del mundo de los limones.",
+    opinion: "[Opinión] Es muy aburrido al principio salvo que se tenga de qué hablar y/o se le vicie durísimo.",
+    who: "Angel (anotado por Dante)", link: "", warning: "", nosolo: false, played: true
+  },
+  {
+    id: 5, name: "Unseen Liminality",
+    alias: "Backrooms drogadicimos nivel de miedo digno de cagarse los pantalones",
+    genre: "Aventura / Horror / Horror psicológico",
+    desc: "Explorar misteriosos espacios liminales y encontrar una manera de avanzar por entornos cada vez más extraños y perturbadores.",
+    opinion: "Queda para jugar algo de terror que realmente te saque unos sustos dignos de un puto paro cardíaco.",
+    who: "Dante", link: "https://www.instagram.com/reel/DZa-ObyRt4j/", warning: "", nosolo: false, played: false
+  },
+  {
+    id: 6, name: "Hyper Karts",
+    alias: "Mario Kart pero en Boblox y con menos presupuesto",
+    genre: "Carreras",
+    desc: "Es básicamente Mario Kart.",
+    opinion: "Queda para pasar el rato y esperar gente, igual que Brace te hará encabronarte por el desvergue que haya.",
+    who: "Yael (Anotado por Dante)", link: "https://www.instagram.com/reel/DaCADU4gTuG/", warning: "", nosolo: false, played: false
+  },
+  {
+    id: 7, name: "Resort [Horror]",
+    alias: "Casa fantasmas de bajo presupuesto creo",
+    genre: "Aventura",
+    desc: "Resolver un caso paranormal de un asesinato.",
+    opinion: "Probablemente quede bien para pasar el rato y disfrutar.",
+    who: "Danya (Anotado por Dante)", link: "https://www.instagram.com/reel/DX2dqgipuzq/", warning: "Asesinatos, contenido paranormal", nosolo: false, played: false
+  },
+  {
+    id: 8, name: "Camper Van Trip",
+    alias: "*Acento chilango* arre chófer la paradaaaa 🗣🔥",
+    genre: "Aventura / Exploración",
+    desc: "Arreglar una van y sobrevivir con lo que se encuentren por el camino.",
+    opinion: "Es God y está excelente para pasar el tiempo y un rato muy cagado.",
+    who: "Yael (Anotado por Dante)", link: "https://www.instagram.com/reel/DZqG6uYAi3z/", warning: "", nosolo: false, played: true
+  },
+  {
+    id: 9, name: "Splatter",
+    alias: "Escondanse tíos ahí viene Andy 🗣🔥",
+    genre: "Supervivencia",
+    desc: "Copia promedio del juego de pintarse y esconderse, pero según es el más God.",
+    opinion: "Estaría God para unas caderas de risa bien pasadas de pistache.",
+    who: "Dante", link: "", warning: "", nosolo: false, played: false
+  },
+  {
+    id: 10, name: "Paracam",
+    alias: "Caza fantasmas con zombies o algo así",
+    genre: "Disparos / Horror",
+    desc: "Somos oficiales de policía que investigan algo misterioso y matamos oleadas de zombies más unos acertijos.",
+    opinion: "Se ve digno de cagarnos del miedo.",
+    who: "Dante", link: "https://www.instagram.com/reel/DZoLbK6vf1p/", warning: "Zombies, jumpscares", nosolo: false, played: false
+  },
+  {
+    id: 11, name: "Indonesian Construction",
+    alias: "Chalan simulator",
+    genre: "Magnate / Simulador",
+    desc: "Ser el arquijuve y tener chalanes para construir casa.",
+    opinion: "[Opinión] Sería como el de los limones creo yo.",
+    who: "Danya (Anotado por Dante)", link: "https://www.instagram.com/reel/DZlIjYUSXzN/", warning: "", nosolo: false, played: false
+  },
+  {
+    id: 12, name: "M.E.G Endless Reality",
+    alias: "Backrooms juego promedio pero bajo presupuesto",
+    genre: "Supervivencia / Escape",
+    desc: "Escapar de los backrooms aguantando el desvergue.",
+    opinion: "[Opinión] Se ve bueno pero siento que estaría medio X, pero estaría bueno probarlo.",
+    who: "Danya (Anotado por Dante)", link: "https://www.instagram.com/reel/DZObjL3hPtr/", warning: "Backrooms, posibles jumpscares", nosolo: false, played: false
+  },
+  {
+    id: 13, name: "Crab Royale",
+    alias: "Armas drogadas pero con cangrejos",
+    genre: "Disparos",
+    desc: "Culiacanazo pero con cangrejos kinda.",
+    opinion: "[Opinión] Creo que estaría bien para pasar el rato matándonos y haciendo estupideces.",
+    who: "Dante", link: "https://www.instagram.com/reel/DZ_WgZABgeD/", warning: "", nosolo: false, played: false
+  },
+  {
+    id: 14, name: "Untitled Bakery",
+    alias: "Somos panaderos tíos 🗣🔥",
+    genre: "Magnate / Simulador",
+    desc: "Somos panaderos y hay que chambear organizándonos para hacer muchas recetas.",
+    opinion: "[Opinión] Estaría bueno jugarlo cuando no tengamos nada qué hacer; sería parecido al de los limones.",
+    who: "Danya (Anotado por Dante)", link: "https://www.instagram.com/reel/DY5_iHcN9-J/", warning: "", nosolo: false, played: false
+  },
+  {
+    id: 15, name: "Bewildered",
+    alias: "",
+    genre: "Horror",
+    desc: "Nos mudamos recientemente y hay que investigar un desmadre medio tétrico.",
+    opinion: "[Opinión] Prepárense para cagarse encima con santos jumpscares, creo que estaría God jugarlo.",
+    who: "Dante", link: "https://www.instagram.com/reel/DX5NpfhPH-H/", warning: "Jumpscares", nosolo: false, played: false
+  },
+  {
+    id: 16, name: "Everything Goes Here 1989",
+    alias: "",
+    genre: "Horror / Horror psicológico",
+    desc: "Horror analógico bien pasado de pistache; somos como policías resolviendo caso de muertes paranormales.",
+    opinion: "Quedaría bien para cagarnos del miedo.",
+    who: "Dante", link: "",
+    warning: "Desmembramiento, ruidos fuertes y distorsionados, asesinatos, posibles imágenes gráficas",
+    nosolo: true, played: false
+  },
+  {
+    id: 17, name: "Nun Massacre",
+    alias: "",
+    genre: "Terror / Misterio",
+    desc: "Entrarás a una casa de monjas a investigar anomalías, pero ellas ocultan un secreto horrible de rituales y asesinatos.",
+    opinion: "[Opinión] Se ve bastante turbio y tenso pero los gráficos están en la mierda; es la descripción de 'hay para poner reggaeton si nos da mucho miedo'.",
+    who: "Dante", link: "https://www.instagram.com/reel/DXvR_DKtxiy/",
+    warning: "Rituales, asesinatos, contenido perturbador",
+    nosolo: false, played: false
+  },
+  {
+    id: 18, name: "The Locust - Survival",
+    alias: "",
+    genre: "Horror / Supervivencia",
+    desc: "Te adentrarás en un bosque donde una criatura humanoide gigante y deforme te buscará para asesinarte.",
+    opinion: "[Opinión] Se ve medio de la verga pero quién sabe y nos carguemos del miedo.",
+    who: "Dante", link: "https://www.instagram.com/reel/DXvR_DKtxiy/",
+    warning: "Jumpscares, criatura explícitamente perturbadora que roza el uncanny valley",
+    nosolo: false, played: false
+  },
+  {
+    id: 19, name: "Requiem",
+    alias: "Ayuda me cagué bien feo",
+    genre: "Horror / Escape",
+    desc: "Eres un preso que intenta escapar de un hospital psiquiátrico en medio de un caos provocado por extrañas entidades asesinas.",
+    opinion: "[Opinión] No mames me voy a cagar encima lowk; de todo el desvergue que pase estará bien pasado de pistache.",
+    who: "Dante", link: "https://www.instagram.com/reel/DXvR_DKtxiy/",
+    warning: "Monstruos con figuras retorcidas, escenas de violencia, sangre, amputación de extremidades, posibles ruidos fuertes",
+    nosolo: false, played: false
+  },
+  {
+    id: 20, name: "Sad Satan (versiones antiguas)",
+    alias: "",
+    genre: "Horror",
+    desc: "Sad Satan pero más chill y con más Lore.",
+    opinion: "[Opinión] Siento que estaría como el de FNAF en que nos agarramos corre y corre.",
+    who: "Erik (Anotado por Dante)", link: "https://www.instagram.com/reel/DaJlW4Ruf7d/",
+    warning: "Jumpscares genéricos, ruidos fuertes y distorsionados, posibles asesinatos, posibles imágenes de casos de pedofilia o asesinatos, posibles imágenes gráficas",
+    nosolo: false, played: false
+  }
+];
+
+let nextId = games.length + 1;
+
+// ─────────────────────────────────────────
+//  TABS
+// ─────────────────────────────────────────
+function switchTab(tab, btn) {
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ─────────────────────────────────────────
+//  FILTROS
+// ─────────────────────────────────────────
+function setFilter(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderGames();
+}
+
+function matchesFilter(g) {
+  if (currentFilter === 'all') return true;
+  if (currentFilter === 'played') return g.played;
+  if (currentFilter === 'unplayed') return !g.played;
+  const genre = g.genre.toLowerCase();
+  if (currentFilter === 'accion')      return genre.includes('acción') || genre.includes('accion');
+  if (currentFilter === 'aventura')    return genre.includes('aventura');
+  if (currentFilter === 'carreras')    return genre.includes('carrera');
+  if (currentFilter === 'disparos')    return genre.includes('disparo');
+  if (currentFilter === 'escape')      return genre.includes('escape');
+  if (currentFilter === 'horror')      return genre.includes('horror') || genre.includes('terror');
+  if (currentFilter === 'horrorpsico') return genre.includes('psicológico') || genre.includes('psicologico');
+  if (currentFilter === 'magnate')     return genre.includes('magnate');
+  if (currentFilter === 'simulador')   return genre.includes('simulador');
+  if (currentFilter === 'supervivencia') return genre.includes('supervivencia');
+  if (currentFilter === 'misterio')    return genre.includes('misterio');
+  return true;
+}
+
+// ─────────────────────────────────────────
+//  RENDER
+// ─────────────────────────────────────────
+function renderGames() {
+  const list = document.getElementById('games-list');
+  const filtered = games.filter(matchesFilter);
+  document.getElementById('games-count').textContent = filtered.length + ' juego' + (filtered.length !== 1 ? 's' : '');
+
+  if (filtered.length === 0) {
+    list.innerHTML = `<div class="empty-state">
+      <div class="empty-icon">🎮</div>
+      <div class="empty-text">No hay juegos con este filtro.<br>¡Recomienda uno!</div>
+    </div>`;
+    return;
+  }
+
+  list.innerHTML = filtered.map(g => `
+    <div class="game-card ${g.played ? 'played' : 'not-played'}">
+      <div class="game-card-header">
+        <div>
+          <div class="game-name">${escHtml(g.name)}</div>
+          ${g.alias ? `<div style="font-size:0.78rem;color:var(--muted);margin-top:2px">${escHtml(g.alias)}</div>` : ''}
+        </div>
+        <div class="game-actions">
+          <button class="btn-icon" title="Editar" onclick="openEdit(${g.id})">✏️</button>
+          <button class="btn-icon" title="Eliminar" onclick="deleteGame(${g.id})" style="color:#ef4444">🗑️</button>
+        </div>
+      </div>
+
+      <div class="game-meta">
+        <span class="badge badge-genre">${escHtml(g.genre)}</span>
+        <span class="badge ${g.played ? 'badge-played' : 'badge-unplayed'}">${g.played ? '✅ Jugado' : '⏳ Sin jugar'}</span>
+        ${g.warning ? `<span class="badge badge-warning">⚠️ Contenido sensible</span>` : ''}
+        ${g.nosolo ? `<span class="badge badge-nosolo">🖥️ Sin multi / plataformas limitadas</span>` : ''}
+      </div>
+
+      <div class="game-desc">${escHtml(g.desc)}</div>
+
+      ${g.opinion ? `<div class="game-opinion">${escHtml(g.opinion)}</div>` : ''}
+
+      ${g.warning ? `
+        <div style="background:rgba(234,179,8,0.08);border:1px solid rgba(234,179,8,0.25);border-radius:8px;padding:8px 12px;font-size:0.78rem;color:#fde047;margin-bottom:6px">
+          ⚠️ <strong>ADVERTENCIA:</strong> ${escHtml(g.warning)}
+        </div>` : ''}
+
+      <div class="game-footer">
+        <div class="game-recommender">Recomendado por: <span>${escHtml(g.who)}</span></div>
+        ${g.link ? `<a class="game-link" href="${escHtml(g.link)}" target="_blank">🔗 Ver fuente</a>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+function escHtml(str) {
+  return String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ─────────────────────────────────────────
+//  FORMULARIO RECOMENDAR
+// ─────────────────────────────────────────
+document.getElementById('r-played').addEventListener('change', function() {
+  document.getElementById('r-played-opinion-group').style.display = this.checked ? 'flex' : 'none';
+});
+
+function submitGame() {
+  const name   = document.getElementById('r-name').value.trim();
+  const genre  = document.getElementById('r-genre').value;
+  const desc   = document.getElementById('r-desc').value.trim();
+  const who    = document.getElementById('r-who').value.trim();
+
+  if (!name || !genre || !desc || !who) {
+    showToast('Faltan campos obligatorios (*) 👀', true);
+    return;
+  }
+
+  const opinion  = document.getElementById('r-opinion').value.trim();
+  const link     = document.getElementById('r-link').value.trim();
+  const warning  = document.getElementById('r-warn').value.trim();
+  const nosolo   = document.getElementById('r-nosolo').checked;
+  const played   = document.getElementById('r-played').checked;
+  const playedOp = document.getElementById('r-played-opinion').value.trim();
+
+  games.push({
+    id: nextId++, name, alias: '', genre, desc,
+    opinion: played && playedOp ? playedOp : opinion,
+    who, link, warning, nosolo, played
+  });
+
+  clearForm();
+  showToast('¡Juego agregado! 🔥');
+  switchTab('games', document.querySelectorAll('.tab-btn')[0]);
+  renderGames();
+}
+
+function clearForm() {
+  ['r-name','r-genre','r-desc','r-opinion','r-who','r-link','r-warn','r-played-opinion'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  document.getElementById('r-nosolo').checked = false;
+  document.getElementById('r-played').checked = false;
+  document.getElementById('r-played-opinion-group').style.display = 'none';
+}
+
+// ─────────────────────────────────────────
+//  EDITAR
+// ─────────────────────────────────────────
+function openEdit(id) {
+  const g = games.find(x => x.id === id);
+  if (!g) return;
+  editingId = id;
+  document.getElementById('e-id').value = id;
+  document.getElementById('e-name').value    = g.name;
+  document.getElementById('e-genre').value   = g.genre;
+  document.getElementById('e-desc').value    = g.desc;
+  document.getElementById('e-opinion').value = g.opinion;
+  document.getElementById('e-who').value     = g.who;
+  document.getElementById('e-link').value    = g.link;
+  document.getElementById('e-warn').value    = g.warning;
+  document.getElementById('e-nosolo').checked = g.nosolo;
+  document.getElementById('e-played').checked = g.played;
+  document.getElementById('edit-modal').classList.add('open');
+}
+
+function closeEdit() {
+  document.getElementById('edit-modal').classList.remove('open');
+  editingId = null;
+}
+
+function saveEdit() {
+  const idx = games.findIndex(x => x.id === editingId);
+  if (idx === -1) return;
+  games[idx].name    = document.getElementById('e-name').value.trim() || games[idx].name;
+  games[idx].genre   = document.getElementById('e-genre').value   || games[idx].genre;
+  games[idx].desc    = document.getElementById('e-desc').value.trim();
+  games[idx].opinion = document.getElementById('e-opinion').value.trim();
+  games[idx].who     = document.getElementById('e-who').value.trim() || games[idx].who;
+  games[idx].link    = document.getElementById('e-link').value.trim();
+  games[idx].warning = document.getElementById('e-warn').value.trim();
+  games[idx].nosolo  = document.getElementById('e-nosolo').checked;
+  games[idx].played  = document.getElementById('e-played').checked;
+  closeEdit();
+  renderGames();
+  showToast('Juego actualizado ✅');
+}
+
+// ─────────────────────────────────────────
+//  ELIMINAR
+// ─────────────────────────────────────────
+function deleteGame(id) {
+  if (!confirm('¿Seguro que quieres borrar este juego de la lista?')) return;
+  games = games.filter(g => g.id !== id);
+  renderGames();
+  showToast('Juego eliminado 🗑️');
+}
+
+// ─────────────────────────────────────────
+//  TOAST
+// ─────────────────────────────────────────
+function showToast(msg, isError = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast' + (isError ? ' error' : '');
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// Cerrar modal con ESC
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeEdit();
+});
+
+// Cerrar modal click fuera
+document.getElementById('edit-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeEdit();
+});
+
+// ─────────────────────────────────────────
+//  PANEL SECRETO — código fuente
+// ─────────────────────────────────────────
+const SECRET_PWD = 'DEDAY';
+const STORAGE_KEY = 'boblox_source_override';
+let secretBuffer = '';
+
+// Detectar escritura de contraseña en cualquier momento (fuera de inputs)
+document.addEventListener('keydown', function(e) {
+  const tag = document.activeElement.tagName;
+  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+  secretBuffer += e.key;
+  if (secretBuffer.length > SECRET_PWD.length) {
+    secretBuffer = secretBuffer.slice(-SECRET_PWD.length);
+  }
+  if (secretBuffer === SECRET_PWD) {
+    secretBuffer = '';
+    openSecretPanel();
+  }
+});
+
+function openSecretPanel() {
+  document.getElementById('secret-panel').classList.add('open');
+  // Cargar el código fuente actual de la página en el editor
+  const src = localStorage.getItem(STORAGE_KEY) || document.documentElement.outerHTML;
+  document.getElementById('source-editor').value = src;
+  document.getElementById('secret-status').textContent = '';
+}
+
+function closeSecretPanel() {
+  document.getElementById('secret-panel').classList.remove('open');
+}
+
+function saveSourceCode() {
+  const newCode = document.getElementById('source-editor').value.trim();
+  if (!newCode) return;
+  localStorage.setItem(STORAGE_KEY, newCode);
+  document.getElementById('secret-status').textContent = '✅ Guardado. Recarga la página para ver los cambios.';
+}
+
+function applySourceNow() {
+  const newCode = document.getElementById('source-editor').value.trim();
+  if (!newCode) return;
+  localStorage.setItem(STORAGE_KEY, newCode);
+  document.open();
+  document.write(newCode);
+  document.close();
+}
+
+function resetSource() {
+  if (!confirm('¿Borrar los cambios guardados y volver al código original?')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  document.getElementById('secret-status').textContent = '🗑️ Cambios borrados. Recarga para restaurar.';
+}
+
+// Al cargar la página, aplicar código guardado si existe
+(function() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    // Solo aplicar si no estamos ya en la versión guardada (evita loop)
+    const marker = '<!-- boblox-saved -->';
+    if (!document.documentElement.outerHTML.includes(marker) && saved.includes(marker)) {
+      document.open();
+      document.write(saved);
+      document.close();
+    }
+  }
+})();
+</script>
+
+<!-- ══════════════ PANEL SECRETO ══════════════ -->
+<style>
+  #secret-panel {
+    position: fixed; inset: 0; z-index: 99999;
+    background: rgba(0,0,0,0.92);
+    display: none;
+    flex-direction: column;
+    padding: 20px;
+    gap: 14px;
+  }
+  #secret-panel.open { display: flex; }
+
+  .sp-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .sp-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #a855f7;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .sp-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  .sp-btn {
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 700;
+    padding: 8px 16px;
+    transition: opacity 0.2s;
+  }
+  .sp-btn:hover { opacity: 0.85; }
+  .sp-btn-save   { background: #7c3aed; color: #fff; }
+  .sp-btn-apply  { background: #22c55e; color: #000; }
+  .sp-btn-reset  { background: #ef4444; color: #fff; }
+  .sp-btn-close  { background: #2e2e4a; color: #e2e0ff; }
+
+  #source-editor {
+    flex: 1;
+    background: #0a0a12;
+    border: 1px solid #2e2e4a;
+    border-radius: 10px;
+    color: #c4b5fd;
+    font-family: 'Courier New', monospace;
+    font-size: 0.82rem;
+    line-height: 1.55;
+    outline: none;
+    padding: 16px;
+    resize: none;
+    width: 100%;
+    tab-size: 2;
+  }
+
+  .sp-hint {
+    font-size: 0.75rem;
+    color: #8b87b0;
+    line-height: 1.5;
+  }
+
+  #secret-status {
+    font-size: 0.82rem;
+    color: #86efac;
+    min-height: 18px;
+  }
+</style>
+
+<div id="secret-panel">
+  <div class="sp-header">
+    <div class="sp-title">🔧 Editor de código fuente <span style="font-size:0.72rem;color:#8b87b0;font-family:'Space Grotesk',sans-serif;font-weight:400">— Panel secreto</span></div>
+    <div class="sp-actions">
+      <button class="sp-btn sp-btn-save"  onclick="saveSourceCode()">💾 Guardar</button>
+      <button class="sp-btn sp-btn-apply" onclick="applySourceNow()">▶ Aplicar ahora</button>
+      <button class="sp-btn sp-btn-reset" onclick="resetSource()">🗑️ Restaurar original</button>
+      <button class="sp-btn sp-btn-close" onclick="closeSecretPanel()">✕ Cerrar</button>
+    </div>
+  </div>
+  <div class="sp-hint">
+    Edita el código directamente aquí. <strong style="color:#e2e0ff">💾 Guardar</strong> guarda los cambios para la próxima vez que abras la página. <strong style="color:#e2e0ff">▶ Aplicar ahora</strong> aplica los cambios al instante. <strong style="color:#ef4444">🗑️ Restaurar</strong> borra todo lo guardado y vuelve al original.
+  </div>
+  <textarea id="source-editor" spellcheck="false"></textarea>
+  <div id="secret-status"></div>
+</div>
+<!-- boblox-saved -->
+</body>
+</html>

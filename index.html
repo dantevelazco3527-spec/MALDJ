@@ -4,6 +4,40 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Juegos del Boblox Oullea</title>
+
+<!-- ══════════════ FIREBASE INIT ══════════════ -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+  import {
+    getFirestore,
+    collection,
+    doc,
+    getDocs,
+    addDoc,
+    setDoc,
+    deleteDoc
+  } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+
+  // 🔧 Reemplaza esto con la configuración de TU proyecto de Firebase
+  // (Firebase Console → Configuración del proyecto → Tus apps → SDK setup and configuration)
+  const firebaseConfig = {
+    apiKey: "TU_API_KEY",
+    authDomain: "TU_PROYECTO.firebaseapp.com",
+    projectId: "TU_PROYECTO",
+    storageBucket: "TU_PROYECTO.appspot.com",
+    messagingSenderId: "TU_SENDER_ID",
+    appId: "TU_APP_ID"
+  };
+
+  const fbApp = initializeApp(firebaseConfig);
+  const db = getFirestore(fbApp);
+  const gamesCol = collection(db, "games");
+
+  // Exponemos lo necesario en window para que el script principal
+  // (script clásico, no-módulo) pueda usarlo con async/await.
+  window.__fb = { db, gamesCol, doc, getDocs, addDoc, setDoc, deleteDoc };
+</script>
+
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@700;800&display=swap');
 
@@ -632,13 +666,6 @@
     </div>
     <div class="login-error" id="login-error"></div>
     <button class="login-btn" onclick="checkLogin()">Entrar 🔥</button>
-    <button onclick="showSecretInput()" style="background:none;border:none;font-size:1.4rem;cursor:pointer;margin-top:6px;align-self:center">🚪</button>
-    <div id="secret-input-box" style="display:none;flex-direction:column;gap:8px;border-top:1px solid var(--border);padding-top:12px;margin-top:4px">
-      <label class="form-label" style="font-size:0.7rem">Contraseña del editor</label>
-      <input id="secret-pwd-input" type="password" class="login-input" placeholder="••••••••" style="padding:10px 14px;font-size:0.9rem" />
-      <div class="login-error" id="secret-pwd-error"></div>
-      <button class="login-btn" onclick="checkSecretPwd()" style="background:linear-gradient(135deg,#2e2e4a,#1e1e30);border:1px solid var(--border);color:var(--muted)">Abrir editor 🔧</button>
-    </div>
   </div>
 </div>
 
@@ -697,7 +724,7 @@
 
     <!-- ── RECOMENDAR ── -->
     <div id="tab-rec" class="tab-pane">
-      <div class="section-title" style="margin-bottom:16px">Recomendar un juego</div>
+style="margin-bottom:16px">Recomendar un juego</div>
 
       <div class="rec-intro">
         Los campos marcados con <strong style="color:#a855f7">*</strong> son <strong>obligatorios</strong>.
@@ -867,23 +894,6 @@ const PASSWORD = "migajeros2025";
 let currentFilter = 'all';
 let editingId = null;
 
-function checkSecretLogin() {
-  const val = document.getElementById('secret-pwd-input').value;
-  if (val === 'DEDAY') {
-    document.getElementById('login-screen').style.display = 'none';
-    openSecretPanel();
-  } else {
-    const err = document.getElementById('secret-login-error');
-    err.textContent = '❌ Contraseña incorrecta';
-    document.getElementById('secret-pwd-input').value = '';
-    setTimeout(() => err.textContent = '', 2500);
-  }
-}
-
-document.getElementById('secret-pwd-input').addEventListener('keydown', e => {
-  if (e.key === 'Enter') checkSecretLogin();
-});
-
 function checkLogin() {
   const val = document.getElementById('pwd-input').value;
   if (val === PASSWORD) {
@@ -915,19 +925,20 @@ function showIntro() {
   intro.style.display = 'flex';
 }
 
-function enterApp() {
+async function enterApp() {
   document.getElementById('intro-screen').style.display = 'none';
   const app = document.getElementById('app');
   app.style.display = 'flex';
-  renderGames();
+  await loadGames();
 }
 
 // ─────────────────────────────────────────
-//  DATOS INICIALES (del documento)
+//  DATOS INICIALES (semilla para Firestore
+//  la primera vez que la colección esté vacía)
 // ─────────────────────────────────────────
-let games = [
+const initialGames = [
   {
-    id: 1, name: "Weird Gun Game",
+    id: "1", name: "Weird Gun Game",
     alias: "El de las armas cocainicas",
     genre: "Disparos",
     desc: "Balear gente con armas modificadas y super marihuanas.",
@@ -935,7 +946,7 @@ let games = [
     who: "Dante", link: "", warning: "", nosolo: false, played: true
   },
   {
-    id: 2, name: "Brace / Apoyapies",
+    id: "2", name: "Brace / Apoyapies",
     alias: "El de los carros de construir la pista",
     genre: "Carreras",
     desc: "Construir un circuito de carreras con muchas partes, power ups, y cosas para cagar el palo.",
@@ -943,7 +954,7 @@ let games = [
     who: "Dante", link: "", warning: "", nosolo: false, played: true
   },
   {
-    id: 3, name: "Item Asylum",
+    id: "3", name: "Item Asylum",
     alias: "*saca una nuclear* ¡los amo padres! 🗣🔥",
     genre: "Acción / Disparos",
     desc: "Armas aleatorias bizarras bien rotas o super inútiles, con las que andamos pasándonos de pistache y matándonos.",
@@ -951,7 +962,7 @@ let games = [
     who: "Dante", link: "", warning: "", nosolo: false, played: true
   },
   {
-    id: 4, name: "Sell Lemons",
+    id: "4", name: "Sell Lemons",
     alias: "Vende limones",
     genre: "Magnate / Simulador",
     desc: "Tener un imperio de vender limonada y ser el CEO del mundo de los limones.",
@@ -959,7 +970,7 @@ let games = [
     who: "Angel (anotado por Dante)", link: "", warning: "", nosolo: false, played: true
   },
   {
-    id: 5, name: "Unseen Liminality",
+    id: "5", name: "Unseen Liminality",
     alias: "Backrooms drogadicimos nivel de miedo digno de cagarse los pantalones",
     genre: "Aventura / Horror / Horror psicológico",
     desc: "Explorar misteriosos espacios liminales y encontrar una manera de avanzar por entornos cada vez más extraños y perturbadores.",
@@ -967,7 +978,7 @@ let games = [
     who: "Dante", link: "https://www.instagram.com/reel/DZa-ObyRt4j/", warning: "", nosolo: false, played: false
   },
   {
-    id: 6, name: "Hyper Karts",
+    id: "6", name: "Hyper Karts",
     alias: "Mario Kart pero en Boblox y con menos presupuesto",
     genre: "Carreras",
     desc: "Es básicamente Mario Kart.",
@@ -975,7 +986,7 @@ let games = [
     who: "Yael (Anotado por Dante)", link: "https://www.instagram.com/reel/DaCADU4gTuG/", warning: "", nosolo: false, played: false
   },
   {
-    id: 7, name: "Resort [Horror]",
+    id: "7", name: "Resort [Horror]",
     alias: "Casa fantasmas de bajo presupuesto creo",
     genre: "Aventura",
     desc: "Resolver un caso paranormal de un asesinato.",
@@ -983,7 +994,7 @@ let games = [
     who: "Danya (Anotado por Dante)", link: "https://www.instagram.com/reel/DX2dqgipuzq/", warning: "Asesinatos, contenido paranormal", nosolo: false, played: false
   },
   {
-    id: 8, name: "Camper Van Trip",
+    id: "8", name: "Camper Van Trip",
     alias: "*Acento chilango* arre chófer la paradaaaa 🗣🔥",
     genre: "Aventura / Exploración",
     desc: "Arreglar una van y sobrevivir con lo que se encuentren por el camino.",
@@ -991,7 +1002,7 @@ let games = [
     who: "Yael (Anotado por Dante)", link: "https://www.instagram.com/reel/DZqG6uYAi3z/", warning: "", nosolo: false, played: true
   },
   {
-    id: 9, name: "Splatter",
+    id: "9", name: "Splatter",
     alias: "Escondanse tíos ahí viene Andy 🗣🔥",
     genre: "Supervivencia",
     desc: "Copia promedio del juego de pintarse y esconderse, pero según es el más God.",
@@ -999,7 +1010,7 @@ let games = [
     who: "Dante", link: "", warning: "", nosolo: false, played: false
   },
   {
-    id: 10, name: "Paracam",
+    id: "10", name: "Paracam",
     alias: "Caza fantasmas con zombies o algo así",
     genre: "Disparos / Horror",
     desc: "Somos oficiales de policía que investigan algo misterioso y matamos oleadas de zombies más unos acertijos.",
@@ -1007,7 +1018,7 @@ let games = [
     who: "Dante", link: "https://www.instagram.com/reel/DZoLbK6vf1p/", warning: "Zombies, jumpscares", nosolo: false, played: false
   },
   {
-    id: 11, name: "Indonesian Construction",
+    id: "11", name: "Indonesian Construction",
     alias: "Chalan simulator",
     genre: "Magnate / Simulador",
     desc: "Ser el arquijuve y tener chalanes para construir casa.",
@@ -1015,7 +1026,7 @@ let games = [
     who: "Danya (Anotado por Dante)", link: "https://www.instagram.com/reel/DZlIjYUSXzN/", warning: "", nosolo: false, played: false
   },
   {
-    id: 12, name: "M.E.G Endless Reality",
+    id: "12", name: "M.E.G Endless Reality",
     alias: "Backrooms juego promedio pero bajo presupuesto",
     genre: "Supervivencia / Escape",
     desc: "Escapar de los backrooms aguantando el desvergue.",
@@ -1023,7 +1034,7 @@ let games = [
     who: "Danya (Anotado por Dante)", link: "https://www.instagram.com/reel/DZObjL3hPtr/", warning: "Backrooms, posibles jumpscares", nosolo: false, played: false
   },
   {
-    id: 13, name: "Crab Royale",
+    id: "13", name: "Crab Royale",
     alias: "Armas drogadas pero con cangrejos",
     genre: "Disparos",
     desc: "Culiacanazo pero con cangrejos kinda.",
@@ -1031,7 +1042,7 @@ let games = [
     who: "Dante", link: "https://www.instagram.com/reel/DZ_WgZABgeD/", warning: "", nosolo: false, played: false
   },
   {
-    id: 14, name: "Untitled Bakery",
+    id: "14", name: "Untitled Bakery",
     alias: "Somos panaderos tíos 🗣🔥",
     genre: "Magnate / Simulador",
     desc: "Somos panaderos y hay que chambear organizándonos para hacer muchas recetas.",
@@ -1039,7 +1050,7 @@ let games = [
     who: "Danya (Anotado por Dante)", link: "https://www.instagram.com/reel/DY5_iHcN9-J/", warning: "", nosolo: false, played: false
   },
   {
-    id: 15, name: "Bewildered",
+    id: "15", name: "Bewildered",
     alias: "",
     genre: "Horror",
     desc: "Nos mudamos recientemente y hay que investigar un desmadre medio tétrico.",
@@ -1047,7 +1058,7 @@ let games = [
     who: "Dante", link: "https://www.instagram.com/reel/DX5NpfhPH-H/", warning: "Jumpscares", nosolo: false, played: false
   },
   {
-    id: 16, name: "Everything Goes Here 1989",
+    id: "16", name: "Everything Goes Here 1989",
     alias: "",
     genre: "Horror / Horror psicológico",
     desc: "Horror analógico bien pasado de pistache; somos como policías resolviendo caso de muertes paranormales.",
@@ -1057,7 +1068,7 @@ let games = [
     nosolo: true, played: false
   },
   {
-    id: 17, name: "Nun Massacre",
+    id: "17", name: "Nun Massacre",
     alias: "",
     genre: "Terror / Misterio",
     desc: "Entrarás a una casa de monjas a investigar anomalías, pero ellas ocultan un secreto horrible de rituales y asesinatos.",
@@ -1067,7 +1078,7 @@ let games = [
     nosolo: false, played: false
   },
   {
-    id: 18, name: "The Locust - Survival",
+    id: "18", name: "The Locust - Survival",
     alias: "",
     genre: "Horror / Supervivencia",
     desc: "Te adentrarás en un bosque donde una criatura humanoide gigante y deforme te buscará para asesinarte.",
@@ -1077,7 +1088,7 @@ let games = [
     nosolo: false, played: false
   },
   {
-    id: 19, name: "Requiem",
+    id: "19", name: "Requiem",
     alias: "Ayuda me cagué bien feo",
     genre: "Horror / Escape",
     desc: "Eres un preso que intenta escapar de un hospital psiquiátrico en medio de un caos provocado por extrañas entidades asesinas.",
@@ -1087,7 +1098,7 @@ let games = [
     nosolo: false, played: false
   },
   {
-    id: 20, name: "Sad Satan (versiones antiguas)",
+    id: "20", name: "Sad Satan (versiones antiguas)",
     alias: "",
     genre: "Horror",
     desc: "Sad Satan pero más chill y con más Lore.",
@@ -1098,7 +1109,49 @@ let games = [
   }
 ];
 
-let nextId = games.length + 1;
+let games = [];
+
+// ─────────────────────────────────────────
+//  FIRESTORE — CARGA / GUARDADO / BORRADO
+// ─────────────────────────────────────────
+async function loadGames() {
+  const { gamesCol, getDocs, doc, setDoc } = window.__fb;
+  try {
+    let snap = await getDocs(gamesCol);
+
+    if (snap.empty) {
+      // Primera vez: sembramos la colección con los juegos del documento original
+      for (const g of initialGames) {
+        const { id, ...data } = g;
+        await setDoc(doc(gamesCol, id), data);
+      }
+      snap = await getDocs(gamesCol);
+    }
+
+    games = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch (err) {
+    console.error(err);
+    showToast('Error al cargar los juegos desde Firebase ⚠️', true);
+    games = [];
+  }
+  renderGames();
+}
+
+async function createGameDoc(data) {
+  const { gamesCol, addDoc } = window.__fb;
+  const ref = await addDoc(gamesCol, data);
+  return ref.id;
+}
+
+async function updateGameDoc(id, data) {
+  const { gamesCol, doc, setDoc } = window.__fb;
+  await setDoc(doc(gamesCol, id), data, { merge: true });
+}
+
+async function removeGameDoc(id) {
+  const { gamesCol, doc, deleteDoc } = window.__fb;
+  await deleteDoc(doc(gamesCol, id));
+}
 
 // ─────────────────────────────────────────
 //  TABS
@@ -1163,8 +1216,8 @@ function renderGames() {
           ${g.alias ? `<div style="font-size:0.78rem;color:var(--muted);margin-top:2px">${escHtml(g.alias)}</div>` : ''}
         </div>
         <div class="game-actions">
-          <button class="btn-icon" title="Editar" onclick="openEdit(${g.id})">✏️</button>
-          <button class="btn-icon" title="Eliminar" onclick="deleteGame(${g.id})" style="color:#ef4444">🗑️</button>
+          <button class="btn-icon" title="Editar" onclick="openEdit('${g.id}')">✏️</button>
+          <button class="btn-icon" title="Eliminar" onclick="deleteGame('${g.id}')" style="color:#ef4444">🗑️</button>
         </div>
       </div>
 
@@ -1203,7 +1256,7 @@ document.getElementById('r-played').addEventListener('change', function() {
   document.getElementById('r-played-opinion-group').style.display = this.checked ? 'flex' : 'none';
 });
 
-function submitGame() {
+async function submitGame() {
   const name   = document.getElementById('r-name').value.trim();
   const genre  = document.getElementById('r-genre').value;
   const desc   = document.getElementById('r-desc').value.trim();
@@ -1221,16 +1274,23 @@ function submitGame() {
   const played   = document.getElementById('r-played').checked;
   const playedOp = document.getElementById('r-played-opinion').value.trim();
 
-  games.push({
-    id: nextId++, name, alias: '', genre, desc,
+  const newGame = {
+    name, alias: '', genre, desc,
     opinion: played && playedOp ? playedOp : opinion,
     who, link, warning, nosolo, played
-  });
+  };
 
-  clearForm();
-  showToast('¡Juego agregado! 🔥');
-  switchTab('games', document.querySelectorAll('.tab-btn')[0]);
-  renderGames();
+  try {
+    const id = await createGameDoc(newGame);
+    games.push({ id, ...newGame });
+    clearForm();
+    showToast('¡Juego agregado! 🔥');
+    switchTab('games', document.querySelectorAll('.tab-btn')[0]);
+    renderGames();
+  } catch (err) {
+    console.error(err);
+    showToast('Error al guardar el juego en Firebase ⚠️', true);
+  }
 }
 
 function clearForm() {
@@ -1268,31 +1328,48 @@ function closeEdit() {
   editingId = null;
 }
 
-function saveEdit() {
+async function saveEdit() {
   const idx = games.findIndex(x => x.id === editingId);
   if (idx === -1) return;
-  games[idx].name    = document.getElementById('e-name').value.trim() || games[idx].name;
-  games[idx].genre   = document.getElementById('e-genre').value   || games[idx].genre;
-  games[idx].desc    = document.getElementById('e-desc').value.trim();
-  games[idx].opinion = document.getElementById('e-opinion').value.trim();
-  games[idx].who     = document.getElementById('e-who').value.trim() || games[idx].who;
-  games[idx].link    = document.getElementById('e-link').value.trim();
-  games[idx].warning = document.getElementById('e-warn').value.trim();
-  games[idx].nosolo  = document.getElementById('e-nosolo').checked;
-  games[idx].played  = document.getElementById('e-played').checked;
-  closeEdit();
-  renderGames();
-  showToast('Juego actualizado ✅');
+
+  const updated = {
+    name:    document.getElementById('e-name').value.trim() || games[idx].name,
+    genre:   document.getElementById('e-genre').value   || games[idx].genre,
+    desc:    document.getElementById('e-desc').value.trim(),
+    opinion: document.getElementById('e-opinion').value.trim(),
+    who:     document.getElementById('e-who').value.trim() || games[idx].who,
+    link:    document.getElementById('e-link').value.trim(),
+    warning: document.getElementById('e-warn').value.trim(),
+    nosolo:  document.getElementById('e-nosolo').checked,
+    played:  document.getElementById('e-played').checked
+  };
+
+  try {
+    await updateGameDoc(editingId, updated);
+    games[idx] = { ...games[idx], ...updated };
+    closeEdit();
+    renderGames();
+    showToast('Juego actualizado ✅');
+  } catch (err) {
+    console.error(err);
+    showToast('Error al actualizar el juego en Firebase ⚠️', true);
+  }
 }
 
 // ─────────────────────────────────────────
 //  ELIMINAR
 // ─────────────────────────────────────────
-function deleteGame(id) {
+async function deleteGame(id) {
   if (!confirm('¿Seguro que quieres borrar este juego de la lista?')) return;
-  games = games.filter(g => g.id !== id);
-  renderGames();
-  showToast('Juego eliminado 🗑️');
+  try {
+    await removeGameDoc(id);
+    games = games.filter(g => g.id !== id);
+    renderGames();
+    showToast('Juego eliminado 🗑️');
+  } catch (err) {
+    console.error(err);
+    showToast('Error al eliminar el juego en Firebase ⚠️', true);
+  }
 }
 
 // ─────────────────────────────────────────
@@ -1315,186 +1392,7 @@ document.addEventListener('keydown', e => {
 document.getElementById('edit-modal').addEventListener('click', function(e) {
   if (e.target === this) closeEdit();
 });
-
-// ─────────────────────────────────────────
-//  PANEL SECRETO — código fuente
-// ─────────────────────────────────────────
-
-function openSecretPanel() {
-  document.getElementById('secret-panel').classList.add('open');
-  // Cargar el código fuente actual de la página en el editor
-  document.getElementById('source-editor').value = src;
-  document.getElementById('secret-status').textContent = '';
-}
-
-function closeSecretPanel() {
-  document.getElementById('secret-panel').classList.remove('open');
-}
-
-  async function saveSourceCode() {
-    const newCode = document.getElementById('source-editor').value.trim();
-    if (!newCode) return;
-    
-    // Guardar en Firebase
-    await window.setDoc(window.doc(window.db, "configuracion", "codigo_fuente"), { code: newCode });
-    document.getElementById('secret-status').textContent = '✅ Guardado en la nube.';
-}
-
-function applySourceNow() {
-  const newCode = document.getElementById('source-editor').value.trim();
-  if (!newCode) return;
-  document.open();
-  document.write(newCode);
-  document.close();
-}
-
-async function applySourceNow() {
-    const newCode = document.getElementById('source-editor').value.trim();
-    if (!newCode) return;
-    
-    // Guardar y aplicar
-    await window.setDoc(window.doc(window.db, "configuracion", "codigo_fuente"), { code: newCode });
-    document.open();
-    document.write(newCode);
-    document.close();
-}
-
-// Al cargar la página, aplicar código guardado si existe desde Firebase
-(async function() {
-    const docRef = window.doc(window.db, "configuracion", "codigo_fuente");
-    const docSnap = await window.getDoc(docRef);
-
-    if (docSnap.exists()) {
-        const saved = docSnap.data().code;
-        // Solo aplicar si no estamos ya en la versión guardada (evita loop)
-        const marker = '<!-- boblox-saved -->';
-        if (!document.documentElement.outerHTML.includes(marker) && saved.includes(marker)) {
-            document.open();
-            document.write(saved);
-            document.close();
-        }
-    }
-})();
-
-  ------Vinculación con la nube------
-<script type="module">
-  // Bloque único y limpio
-  // Dentro de tu bloque <script type="module">
-import { getDoc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-window.db = db;
-window.doc = doc;
-window.getDoc = getDoc;
-window.setDoc = setDoc;
-window.deleteDoc = deleteDoc;
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getFirestore, collection, addDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyChJtDnV0x4uyn3UY-_ReuJtr2VerZFk1k",
-    authDomain: "maldjupdt.firebaseapp.com",
-    projectId: "maldjupdt",
-    storageBucket: "maldjupdt.appspot.com",
-    messagingSenderId: "495563109235",
-    appId: "1:495563109235:web:4e5c9e72f6b1109968434e"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
 </script>
 
-<!-- ══════════════ PANEL SECRETO ══════════════ -->
-<style>
-  #secret-panel {
-    position: fixed; inset: 0; z-index: 99999;
-    background: rgba(0,0,0,0.92);
-    display: none;
-    flex-direction: column;
-    padding: 20px;
-    gap: 14px;
-  }
-  #secret-panel.open { display: flex; }
-
-  .sp-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 10px;
-  }
-
-  .sp-title {
-    font-family: 'Syne', sans-serif;
-    font-size: 1.1rem;
-    font-weight: 800;
-    color: #a855f7;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .sp-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-
-  .sp-btn {
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 0.82rem;
-    font-weight: 700;
-    padding: 8px 16px;
-    transition: opacity 0.2s;
-  }
-  .sp-btn:hover { opacity: 0.85; }
-  .sp-btn-save   { background: #7c3aed; color: #fff; }
-  .sp-btn-apply  { background: #22c55e; color: #000; }
-  .sp-btn-reset  { background: #ef4444; color: #fff; }
-  .sp-btn-close  { background: #2e2e4a; color: #e2e0ff; }
-
-  #source-editor {
-    flex: 1;
-    background: #0a0a12;
-    border: 1px solid #2e2e4a;
-    border-radius: 10px;
-    color: #c4b5fd;
-    font-family: 'Courier New', monospace;
-    font-size: 0.82rem;
-    line-height: 1.55;
-    outline: none;
-    padding: 16px;
-    resize: none;
-    width: 100%;
-    tab-size: 2;
-  }
-
-  .sp-hint {
-    font-size: 0.75rem;
-    color: #8b87b0;
-    line-height: 1.5;
-  }
-
-  #secret-status {
-    font-size: 0.82rem;
-    color: #86efac;
-    min-height: 18px;
-  }
-</style>
-
-<div id="secret-panel">
-  <div class="sp-header">
-    <div class="sp-title">🔧 Editor de código fuente <span style="font-size:0.72rem;color:#8b87b0;font-family:'Space Grotesk',sans-serif;font-weight:400">— Panel secreto</span></div>
-    <div class="sp-actions">
-      <button class="sp-btn sp-btn-save"  onclick="saveSourceCode()">💾 Guardar</button>
-      <button class="sp-btn sp-btn-apply" onclick="applySourceNow()">▶ Aplicar ahora</button>
-      <button class="sp-btn sp-btn-reset" onclick="resetSource()">🗑️ Restaurar original</button>
-      <button class="sp-btn sp-btn-close" onclick="closeSecretPanel()">✕ Cerrar</button>
-    </div>
-  </div>
-  <div class="sp-hint">
-    Edita el código directamente aquí. <strong style="color:#e2e0ff">💾 Guardar</strong> guarda los cambios para la próxima vez que abras la página. <strong style="color:#e2e0ff">▶ Aplicar ahora</strong> aplica los cambios al instante. <strong style="color:#ef4444">🗑️ Restaurar</strong> borra todo lo guardado y vuelve al original.
-  </div>
-  <textarea id="source-editor" spellcheck="false"></textarea>
-  <div id="secret-status"></div>
-</div>
-<!-- boblox-saved -->
 </body>
 </html>

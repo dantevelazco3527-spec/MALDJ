@@ -1319,12 +1319,10 @@ document.getElementById('edit-modal').addEventListener('click', function(e) {
 // ─────────────────────────────────────────
 //  PANEL SECRETO — código fuente
 // ─────────────────────────────────────────
-const STORAGE_KEY = 'boblox_source_override';
 
 function openSecretPanel() {
   document.getElementById('secret-panel').classList.add('open');
   // Cargar el código fuente actual de la página en el editor
-  const src = localStorage.getItem(STORAGE_KEY) || document.documentElement.outerHTML;
   document.getElementById('source-editor').value = src;
   document.getElementById('secret-status').textContent = '';
 }
@@ -1333,46 +1331,61 @@ function closeSecretPanel() {
   document.getElementById('secret-panel').classList.remove('open');
 }
 
-function saveSourceCode() {
-  const newCode = document.getElementById('source-editor').value.trim();
-  if (!newCode) return;
-  localStorage.setItem(STORAGE_KEY, newCode);
-  document.getElementById('secret-status').textContent = '✅ Guardado. Recarga la página para ver los cambios.';
+  async function saveSourceCode() {
+    const newCode = document.getElementById('source-editor').value.trim();
+    if (!newCode) return;
+    
+    // Guardar en Firebase
+    await window.setDoc(window.doc(window.db, "configuracion", "codigo_fuente"), { code: newCode });
+    document.getElementById('secret-status').textContent = '✅ Guardado en la nube.';
 }
 
 function applySourceNow() {
   const newCode = document.getElementById('source-editor').value.trim();
   if (!newCode) return;
-  localStorage.setItem(STORAGE_KEY, newCode);
   document.open();
   document.write(newCode);
   document.close();
 }
 
-function resetSource() {
-  if (!confirm('¿Borrar los cambios guardados y volver al código original?')) return;
-  localStorage.removeItem(STORAGE_KEY);
-  document.getElementById('secret-status').textContent = '🗑️ Cambios borrados. Recarga para restaurar.';
+async function applySourceNow() {
+    const newCode = document.getElementById('source-editor').value.trim();
+    if (!newCode) return;
+    
+    // Guardar y aplicar
+    await window.setDoc(window.doc(window.db, "configuracion", "codigo_fuente"), { code: newCode });
+    document.open();
+    document.write(newCode);
+    document.close();
 }
 
-// Al cargar la página, aplicar código guardado si existe
-(function() {
-  const saved = localStorage.getItem(STORAGE_KEY);
-  if (saved) {
-    // Solo aplicar si no estamos ya en la versión guardada (evita loop)
-    const marker = '<!-- boblox-saved -->';
-    if (!document.documentElement.outerHTML.includes(marker) && saved.includes(marker)) {
-      document.open();
-      document.write(saved);
-      document.close();
+// Al cargar la página, aplicar código guardado si existe desde Firebase
+(async function() {
+    const docRef = window.doc(window.db, "configuracion", "codigo_fuente");
+    const docSnap = await window.getDoc(docRef);
+
+    if (docSnap.exists()) {
+        const saved = docSnap.data().code;
+        // Solo aplicar si no estamos ya en la versión guardada (evita loop)
+        const marker = '<!-- boblox-saved -->';
+        if (!document.documentElement.outerHTML.includes(marker) && saved.includes(marker)) {
+            document.open();
+            document.write(saved);
+            document.close();
+        }
     }
-  }
 })();
-</script>
 
   ------Vinculación con la nube------
 <script type="module">
   // Bloque único y limpio
+  // Dentro de tu bloque <script type="module">
+import { getDoc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+window.db = db;
+window.doc = doc;
+window.getDoc = getDoc;
+window.setDoc = setDoc;
+window.deleteDoc = deleteDoc;
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
   import { getFirestore, collection, addDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 

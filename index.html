@@ -1370,6 +1370,31 @@ function resetSource() {
 })();
 </script>
 
+  ------Vinculación con la nube------
+  <script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-analytics.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
+
+  // Your web app's Firebase configuration
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  const firebaseConfig = {
+    apiKey: "AIzaSyChJtDnVOx4uym3UY-_RauJtr2WerZFK1k",
+    authDomain: "maldjupdt.firebaseapp.com",
+    projectId: "maldjupdt",
+    storageBucket: "maldjupdt.firebasestorage.app",
+    messagingSenderId: "495563109235",
+    appId: "1:495563109235:web:4e5c9e72f6b11635950b06",
+    measurementId: "G-TRPZTPJWGH"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+  </script>
+  
 <!-- ══════════════ PANEL SECRETO ══════════════ -->
 <style>
   #secret-panel {

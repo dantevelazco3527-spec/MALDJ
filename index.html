@@ -715,6 +715,7 @@
         <button class="filter-btn" onclick="setFilter('horror', this)">👻 Horror</button>
         <button class="filter-btn" onclick="setFilter('horrorpsico', this)">🧠 Horror psicológico</button>
         <button class="filter-btn" onclick="setFilter('magnate', this)">💰 Magnate</button>
+        <button class="filter-btn" onclick="setFilter('minijuegos', this)">🎮 Minijuegos</button>
         <button class="filter-btn" onclick="setFilter('simulador', this)">🏗️ Simulador</button>
         <button class="filter-btn" onclick="setFilter('supervivencia', this)">🛡️ Supervivencia</button>
         <button class="filter-btn" onclick="setFilter('misterio', this)">🔍 Misterio</button>
@@ -751,6 +752,7 @@
               <option>Horror</option>
               <option>Horror psicológico</option>
               <option>Magnate</option>
+              <option>Minijuegos</option>
               <option>Simulador</option>
               <option>Supervivencia</option>
               <option>Misterio</option>
@@ -839,6 +841,7 @@
           <option>Horror</option>
           <option>Horror psicológico</option>
           <option>Magnate</option>
+          <option>Minijuegos</option>
           <option>Simulador</option>
           <option>Supervivencia</option>
           <option>Misterio</option>
@@ -1190,6 +1193,7 @@ function matchesFilter(g) {
   if (currentFilter === 'horror')      return genre.includes('horror') || genre.includes('terror');
   if (currentFilter === 'horrorpsico') return genre.includes('psicológico') || genre.includes('psicologico');
   if (currentFilter === 'magnate')     return genre.includes('magnate');
+  if (currentFilter === 'minijuegos')  return genre.includes('minijuegos');
   if (currentFilter === 'simulador')   return genre.includes('simulador');
   if (currentFilter === 'supervivencia') return genre.includes('supervivencia');
   if (currentFilter === 'misterio')    return genre.includes('misterio');

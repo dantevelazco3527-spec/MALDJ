@@ -15,9 +15,11 @@
     getDocs,
     addDoc,
     setDoc,
-    deleteDoc
+    deleteDoc,
+    updateDoc,
+    increment
   } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
-
+  
   // 🔧 Reemplaza esto con la configuración de TU proyecto de Firebase
   // (Firebase Console → Configuración del proyecto → Tus apps → SDK setup and configuration)
   const firebaseConfig = {
@@ -30,9 +32,11 @@
   };
 
   const fbApp = initializeApp(firebaseConfig);
+  const updatesCol = collection(db, "updates");
+  const suggestionsCol = collection(db, "suggestions");
   const db = getFirestore(fbApp);
-  const gamesCol = collection(db, "games");
-
+  window.__fb = { db, gamesCol, updatesCol, suggestionsCol, doc, getDocs, addDoc, setDoc, deleteDoc, updateDoc, increment };
+  
   // Exponemos lo necesario en window para que el script principal
   // (script clásico, no-módulo) pueda usarlo con async/await.
   window.__fb = { db, gamesCol, doc, getDocs, addDoc, setDoc, deleteDoc };
@@ -688,11 +692,11 @@
     <button class="header-logout" onclick="logout()">Salir</button>
   </header>
 
-  <div class="tabs">
-    <button class="tab-btn active" onclick="switchTab('games', this)">🎮 Juegos</button>
-    <button class="tab-btn" onclick="switchTab('rec', this)">➕ Recomendar juego</button>
-  </div>
-
+  <button class="tab-btn" onclick="switchTab('rec', this)">➕ Recomendar juego</button>
+    <button class="tab-btn" onclick="switchTab('updates', this)">📋 Actualizaciones</button>
+    <button class="tab-btn" onclick="switchTab('suggest', this)">🗳️ Postular juego</button>
+</div>
+  
   <div class="content">
 
     <!-- ── JUEGOS ── -->
@@ -809,10 +813,7 @@
         </div>
       </div>
     </div>
-
-  </div>
-</div>
-
+    
   <!-- ── ACTUALIZACIONES ── -->
     <div id="tab-updates" class="tab-pane">
       <div class="section-header">

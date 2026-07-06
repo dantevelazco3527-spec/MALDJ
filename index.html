@@ -1490,14 +1490,20 @@ function renderUpdatesList() {
     </div>`;
     return;
   }
+  ${isAdmin ? `
+  <button class="admin-only" style="background:none;border:none;cursor:pointer;font-size:1rem;padding:0" onclick="editUpdateEntry('${u.id}')" title="Editar">✏️</button>
+  <button class="admin-only" style="background:none;border:none;cursor:pointer;font-size:1rem;padding:0" onclick="deleteUpdateEntry('${u.id}')" title="Borrar">🗑️</button>
+` : ''}
 cont.innerHTML = updates.map(u => `
     <div class="game-card">
       <div class="game-card-header">
         <div class="game-name">v${escHtml(u.version)}</div>
         <div style="display:flex;align-items:center;gap:12px">
           <div style="font-size:0.78rem;color:var(--muted)">${escHtml(u.fecha)}</div>
-          <button class="admin-only" style="background:none;border:none;cursor:pointer;font-size:1rem;padding:0" onclick="editUpdateEntry('${u.id}')" title="Editar">✏️</button>
-          <button class="admin-only" style="background:none;border:none;cursor:pointer;font-size:1rem;padding:0" onclick="deleteUpdateEntry('${u.id}')" title="Borrar">🗑️</button>
+          ${isAdmin ? `
+            <button class="admin-only" style="background:none;border:none;cursor:pointer;font-size:1rem;padding:0" onclick="editUpdateEntry('${u.id}')" title="Editar">✏️</button>
+            <button class="admin-only" style="background:none;border:none;cursor:pointer;font-size:1rem;padding:0" onclick="deleteUpdateEntry('${u.id}')" title="Borrar">🗑️</button>
+          ` : ''}
         </div>
       </div>
       <div class="game-desc">${escHtml(u.texto)}</div>

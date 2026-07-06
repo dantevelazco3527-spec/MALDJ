@@ -31,15 +31,13 @@
     appId: "1:495563109235:web:4e5c9e72f6b11635950b06"
   };
 
-  const fbApp = initializeApp(firebaseConfig);
+const fbApp = initializeApp(firebaseConfig);
+  const db = getFirestore(fbApp);
+  const gamesCol = collection(db, "games");
   const updatesCol = collection(db, "updates");
   const suggestionsCol = collection(db, "suggestions");
-  const db = getFirestore(fbApp);
+
   window.__fb = { db, gamesCol, updatesCol, suggestionsCol, doc, getDocs, addDoc, setDoc, deleteDoc, updateDoc, increment };
-  
-  // Exponemos lo necesario en window para que el script principal
-  // (script clásico, no-módulo) pueda usarlo con async/await.
-  window.__fb = { db, gamesCol, doc, getDocs, addDoc, setDoc, deleteDoc };
 </script>
 
 <style>

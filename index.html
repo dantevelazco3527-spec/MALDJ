@@ -813,6 +813,50 @@
   </div>
 </div>
 
+  <!-- ── ACTUALIZACIONES ── -->
+    <div id="tab-updates" class="tab-pane">
+      <div class="section-header">
+        <div class="section-title">Actualizaciones</div>
+        <button class="btn-submit admin-only" onclick="promptAddUpdate()">+ Nueva actualización</button>
+      </div>
+      <div id="updates-list"></div>
+    </div>
+
+    <!-- ── POSTULAR JUEGO ── -->
+    <div id="tab-suggest" class="tab-pane">
+      <div class="section-title" style="margin-bottom:16px">Postula un juego para esta semana</div>
+
+      <div class="rec-intro">
+        Postula un juego para que se vote y se juegue esta semana. No entra directo al catálogo,
+        primero se vota aquí 🗳️
+      </div>
+
+      <div class="rec-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Nombre del juego <span class="required">*</span></label>
+            <input type="text" class="form-input" id="s-name" placeholder="Ej: Item Asylum" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Quién postula <span class="required">*</span></label>
+            <input type="text" class="form-input" id="s-who" placeholder="Tu nombre o apodo" />
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="btn-submit" onclick="submitSuggestion()">Postular 🔥</button>
+        </div>
+      </div>
+
+      <div class="section-header" style="margin-top:28px">
+        <div class="section-title">Postulaciones de esta semana</div>
+        <button class="btn-cancel admin-only" onclick="resetSuggestions()">🔄 Reiniciar semana</button>
+      </div>
+      <div id="suggestions-list"></div>
+    </div>
+
+  </div>
+</div>
+
 <!-- ══════════════ MODAL EDITAR ══════════════ -->
 <div class="modal-overlay" id="edit-modal">
   <div class="modal">
@@ -897,12 +941,19 @@
 //  CONTRASEÑA
 // ─────────────────────────────────────────
 const PASSWORD = "migajeros2025";
+const PASSWORD_ADMIN = "migajeros2025+"; // 🔧 tu clave secreta de admin
+let isAdmin = false;
 let currentFilter = 'all';
 let editingId = null;
 
 function checkLogin() {
   const val = document.getElementById('pwd-input').value;
-  if (val === PASSWORD) {
+  if (val === PASSWORD_ADMIN) {
+    isAdmin = true;
+    document.getElementById('login-screen').style.display = 'none';
+    showIntro();
+  } else if (val === PASSWORD) {
+    isAdmin = false;
     document.getElementById('login-screen').style.display = 'none';
     showIntro();
   } else {
@@ -921,6 +972,7 @@ function logout() {
   document.getElementById('app').style.display = 'none';
   document.getElementById('login-screen').style.display = 'flex';
   document.getElementById('pwd-input').value = '';
+  isAdmin = false;
 }
 
 // ─────────────────────────────────────────
@@ -935,7 +987,16 @@ async function enterApp() {
   document.getElementById('intro-screen').style.display = 'none';
   const app = document.getElementById('app');
   app.style.display = 'flex';
+  applyAdminUI();
   await loadGames();
+  await loadUpdates();
+  await loadSuggestions();
+}
+
+function applyAdminUI() {
+  document.querySelectorAll('.admin-only').forEach(el => {
+    el.style.display = isAdmin ? '' : 'none';
+  });
 }
 
 // ─────────────────────────────────────────
@@ -1400,7 +1461,171 @@ document.addEventListener('keydown', e => {
 document.getElementById('edit-modal').addEventListener('click', function(e) {
   if (e.target === this) closeEdit();
 });
-</script>
+  
+// ─────────────────────────────────────────
+//  ACTUALIZACIONES (SemVer) — solo admin agrega
+// ─────────────────────────────────────────
+let updates = [];
+
+async function loadUpdates() {
+  const { updatesCol, getDocs } = window.__fb;
+  try {
+    const snap = await getDocs(updatesCol);
+    updates = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    updates.sort((a, b) => b.version.localeCompare(a.version, undefined, { numeric: true }));
+  } catch (err) {
+    console.error(err);
+    updates = [];
+  }
+  renderUpdatesList();
+}
+
+function renderUpdatesList() {
+  const cont = document.getElementById('updates-list');
+  if (!updates.length) {
+    cont.innerHTML = `<div class="empty-state">
+      <div class="empty-icon">📋</div>
+      <div class="empty-text">Todavía no hay actualizaciones registradas.</div>
+    </div>`;
+    return;
+  }
+  cont.innerHTML = updates.map(u => `
+    <div class="game-card">
+      <div class="game-card-header">
+        <div class="game-name">v${escHtml(u.version)}</div>
+        <div style="font-size:0.78rem;color:var(--muted)">${escHtml(u.fecha)}</div>
+      </div>
+      <div class="game-desc">${escHtml(u.texto)}</div>
+    </div>
+  `).join('');
+}
+
+async function promptAddUpdate() {
+  if (!isAdmin) {
+    showToast('No tienes permisos de administrador ❌', true);
+    return;
+  }
+  const version = prompt('Versión (ej: 1.4.0):');
+  if (!version) return;
+  const texto = prompt('¿Qué cambió?');
+  if (!texto) return;
+
+  const { updatesCol, addDoc } = window.__fb;
+  const fecha = new Date().toISOString().slice(0, 10);
+  try {
+    await addDoc(updatesCol, { version: version.trim(), texto: texto.trim(), fecha });
+    showToast('Actualización agregada ✅');
+    loadUpdates();
+  } catch (err) {
+    console.error(err);
+    showToast('Error al guardar la actualización ⚠️', true);
+  }
+}
+
+// ─────────────────────────────────────────
+//  POSTULACIÓN DE JUEGOS (voto semanal)
+// ─────────────────────────────────────────
+let suggestions = [];
+
+function getVoted() {
+  return JSON.parse(localStorage.getItem('votedSuggestions') || '[]');
+}
+
+async function loadSuggestions() {
+  const { suggestionsCol, getDocs } = window.__fb;
+  try {
+    const snap = await getDocs(suggestionsCol);
+    suggestions = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    suggestions.sort((a, b) => (b.votes || 0) - (a.votes || 0));
+  } catch (err) {
+    console.error(err);
+    suggestions = [];
+  }
+  renderSuggestionsList();
+}
+
+function renderSuggestionsList() {
+  const cont = document.getElementById('suggestions-list');
+  const voted = getVoted();
+  if (!suggestions.length) {
+    cont.innerHTML = `<div class="empty-state">
+      <div class="empty-icon">🗳️</div>
+      <div class="empty-text">Nadie ha postulado juegos esta semana.<br>¡Sé el primero!</div>
+    </div>`;
+    return;
+  }
+  cont.innerHTML = suggestions.map(s => `
+    <div class="game-card">
+      <div class="game-card-header">
+        <div class="game-name">${escHtml(s.name)}</div>
+        <span class="badge badge-genre">${s.votes || 0} voto${(s.votes || 0) !== 1 ? 's' : ''}</span>
+      </div>
+      <div style="font-size:0.8rem;color:var(--muted);margin-bottom:10px">Postulado por: ${escHtml(s.who)}</div>
+      <div class="form-actions">
+        <button class="btn-submit" ${voted.includes(s.id) ? 'disabled' : ''} onclick="voteSuggestion('${s.id}')">
+          ${voted.includes(s.id) ? 'Ya votaste ✅' : '👍 Votar'}
+        </button>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function submitSuggestion() {
+  const name = document.getElementById('s-name').value.trim();
+  const who  = document.getElementById('s-who').value.trim();
+  if (!name || !who) {
+    showToast('Completa nombre y quién postula 👀', true);
+    return;
+  }
+  const { suggestionsCol, addDoc } = window.__fb;
+  try {
+    await addDoc(suggestionsCol, { name, who, votes: 0 });
+    document.getElementById('s-name').value = '';
+    document.getElementById('s-who').value = '';
+    showToast('¡Postulado! 🔥');
+    loadSuggestions();
+  } catch (err) {
+    console.error(err);
+    showToast('Error al postular el juego ⚠️', true);
+  }
+}
+
+async function voteSuggestion(id) {
+  const voted = getVoted();
+  if (voted.includes(id)) return;
+  const { suggestionsCol, doc, updateDoc, increment } = window.__fb;
+  try {
+    await updateDoc(doc(suggestionsCol, id), { votes: increment(1) });
+    voted.push(id);
+    localStorage.setItem('votedSuggestions', JSON.stringify(voted));
+    loadSuggestions();
+  } catch (err) {
+    console.error(err);
+    showToast('Error al votar ⚠️', true);
+  }
+}
+
+async function resetSuggestions() {
+  if (!isAdmin) {
+    showToast('No tienes permisos de administrador ❌', true);
+    return;
+  }
+  if (!confirm('¿Borrar todas las postulaciones de esta semana?')) return;
+  const { suggestionsCol, getDocs, doc, deleteDoc } = window.__fb;
+  try {
+    const snap = await getDocs(suggestionsCol);
+    for (const d of snap.docs) {
+      await deleteDoc(doc(suggestionsCol, d.id));
+    }
+    localStorage.removeItem('votedSuggestions');
+    showToast('Postulaciones reiniciadas 🔄');
+    loadSuggestions();
+  } catch (err) {
+    console.error(err);
+    showToast('Error al reiniciar postulaciones ⚠️', true);
+  }
+}
+          </script>
 
 </body>
 </html>

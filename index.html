@@ -692,13 +692,15 @@
     <button class="header-logout" onclick="logout()">Salir</button>
   </header>
 
-  <button class="tab-btn" onclick="switchTab('rec', this)">➕ Recomendar juego</button>
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('games', this)">🎮 Juegos</button>
+    <button class="tab-btn" onclick="switchTab('rec', this)">➕ Recomendar juego</button>
     <button class="tab-btn" onclick="switchTab('updates', this)">📋 Actualizaciones</button>
     <button class="tab-btn" onclick="switchTab('suggest', this)">🗳️ Postular juego</button>
-</div>
-  
-  <div class="content">
+  </div>
 
+  <div class="content">
+    
     <!-- ── JUEGOS ── -->
     <div id="tab-games" class="tab-pane active">
       <div class="section-header">

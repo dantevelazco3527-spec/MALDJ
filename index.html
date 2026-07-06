@@ -1511,6 +1511,7 @@ async function promptAddUpdate() {
     showToast('No tienes permisos de administrador ❌', true);
     return;
   }
+  
   const version = prompt('Versión (ej: 1.4.0):');
   if (!version) return;
   const texto = prompt('¿Qué cambió?');
@@ -1533,6 +1534,7 @@ async function promptAddUpdate() {
     showToast('No tienes permisos de administrador ❌', true);
     return;
   }
+    
   const current = updates.find(u => u.id === id);
   if (!current) return;
 

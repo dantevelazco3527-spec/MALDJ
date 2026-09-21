@@ -713,6 +713,7 @@ const fbApp = initializeApp(firebaseConfig);
         <button class="filter-btn" onclick="setFilter('accion', this)">⚔️ Acción</button>
         <button class="filter-btn" onclick="setFilter('aventura', this)">🗺️ Aventura</button>
         <button class="filter-btn" onclick="setFilter('carreras', this)">🏎️ Carreras</button>
+        <button class="filter-btm" onclick="setFilter('Casual', this)">🤙 Casual</button>
         <button class="filter-btn" onclick="setFilter('disparos', this)">🔫 Disparos</button>
         <button class="filter-btn" onclick="setFilter('escape', this)">🚪 Escape</button>
         <button class="filter-btn" onclick="setFilter('exploración', this)">🔦 Exploración</button>
@@ -750,6 +751,7 @@ const fbApp = initializeApp(firebaseConfig);
               <option>Acción</option>
               <option>Aventura</option>
               <option>Carreras</option>
+              <option>Casual</option>
               <option>Disparos</option>
               <option>Escape</option>
               <option>Exploración</option>
@@ -1249,6 +1251,7 @@ function matchesFilter(g) {
   if (currentFilter === 'accion')      return genre.includes('acción') || genre.includes('accion');
   if (currentFilter === 'aventura')    return genre.includes('aventura');
   if (currentFilter === 'carreras')    return genre.includes('carrera');
+  if (currentFilter === 'casual')      return genre.includes('casual');
   if (currentFilter === 'disparos')    return genre.includes('disparo');
   if (currentFilter === 'escape')      return genre.includes('escape');
   if (currentFilter === 'exploración') return genre.includes('exploración')
@@ -1326,40 +1329,35 @@ document.getElementById('r-played').addEventListener('change', function() {
   document.getElementById('r-played-opinion-group').style.display = this.checked ? 'flex' : 'none';
 });
 
-async function submitGame() {
-  const name   = document.getElementById('r-name').value.trim();
-  const genre  = document.getElementById('r-genre').value;
-  const desc   = document.getElementById('r-desc').value.trim();
-  const who    = document.getElementById('r-who').value.trim();
+async function submitSuggestion() {
+  const name = document.getElementById('s-name').value.trim();
+  const who  = document.getElementById('s-who').value.trim();
+  const limited = document.getElementById('s-limited').checked;
+  const limitInput = document.getElementById('s-limit').value.trim();
+  const limit = limited && limitInput ? parseInt(limitInput, 10) : null;
 
-  if (!name || !genre || !desc || !who) {
-    showToast('Faltan campos obligatorios (*) 👀', true);
+  if (!name || !who) {
+    showToast('Completa nombre y quién postula 👀', true);
+    return;
+  }
+  if (limited && !limit) {
+    showToast('Indica el número máximo de jugadores 👀', true);
     return;
   }
 
-  const opinion  = document.getElementById('r-opinion').value.trim();
-  const link     = document.getElementById('r-link').value.trim();
-  const warning  = document.getElementById('r-warn').value.trim();
-  const nosolo   = document.getElementById('r-nosolo').checked;
-  const played   = document.getElementById('r-played').checked;
-  const playedOp = document.getElementById('r-played-opinion').value.trim();
-
-  const newGame = {
-    name, alias: '', genre, desc,
-    opinion: played && playedOp ? playedOp : opinion,
-    who, link, warning, nosolo, played
-  };
-
+  const { suggestionsCol, addDoc } = window.__fb;
   try {
-    const id = await createGameDoc(newGame);
-    games.push({ id, ...newGame });
-    clearForm();
-    showToast('¡Juego agregado! 🔥');
-    switchTab('games', document.querySelectorAll('.tab-btn')[0]);
-    renderGames();
+    await addDoc(suggestionsCol, { name, who, votes: 0, limited, limit });
+    document.getElementById('s-name').value = '';
+    document.getElementById('s-who').value = '';
+    document.getElementById('s-limited').checked = false;
+    document.getElementById('s-limit').value = '';
+    document.getElementById('s-limit-wrap').style.display = 'none';
+    showToast('¡Postulado! 🔥');
+    loadSuggestions();
   } catch (err) {
     console.error(err);
-    showToast('Error al guardar el juego en Firebase ⚠️', true);
+    showToast('Error al postular el juego ⚠️', true);
   }
 }
 

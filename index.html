@@ -713,7 +713,7 @@ const fbApp = initializeApp(firebaseConfig);
         <button class="filter-btn" onclick="setFilter('accion', this)">⚔️ Acción</button>
         <button class="filter-btn" onclick="setFilter('aventura', this)">🗺️ Aventura</button>
         <button class="filter-btn" onclick="setFilter('carreras', this)">🏎️ Carreras</button>
-        <button class="filter-btm" onclick="setFilter('casual', this)">🤙 Casual</button>
+        <button class="filter-btn" onclick="setFilter('casual', this)">🤙 Casual</button>
         <button class="filter-btn" onclick="setFilter('disparos', this)">🔫 Disparos</button>
         <button class="filter-btn" onclick="setFilter('escape', this)">🚪 Escape</button>
         <button class="filter-btn" onclick="setFilter('exploración', this)">🔦 Exploración</button>
@@ -817,9 +817,10 @@ const fbApp = initializeApp(firebaseConfig);
           <input type="number" class="form-input" id="r-limit" min="1" placeholder="¿Cuántos jugadores como máximo?" />
         </div>
 
-        <div class="form-actions">
+<div class="form-actions">
           <button class="btn-cancel" onclick="clearForm()">Limpiar</button>
-        </div>
+          <button class="btn-submit" onclick="submitGame()">Agregar juego 🔥</button>
+</div>
       </div>
     </div>
     

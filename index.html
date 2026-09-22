@@ -940,6 +940,14 @@ const fbApp = initializeApp(firebaseConfig);
       <label for="e-played">Ya se ha jugado ✅</label>
     </div>
 
+    <div class="checkbox-group">
+      <input type="checkbox" id="e-limited" onchange="document.getElementById('e-limit-wrap').style.display = this.checked ? 'block' : 'none'" />
+      <label for="e-limited">¿Tiene un número limitado de jugadores?</label>
+    </div>
+    <div class="form-group" id="e-limit-wrap" style="display:none">
+      <input type="number" class="form-input" id="e-limit" min="1" placeholder="¿Cuántos jugadores como máximo?" />
+    </div>
+
     <div class="form-actions">
       <button class="btn-cancel" onclick="closeEdit()">Cancelar</button>
       <button class="btn-submit" onclick="saveEdit()">Guardar cambios</button>
@@ -1417,9 +1425,11 @@ function openEdit(id) {
   document.getElementById('e-opinion').value = g.opinion;
   document.getElementById('e-who').value     = g.who;
   document.getElementById('e-link').value    = g.link;
-  document.getElementById('e-warn').value    = g.warning;
   document.getElementById('e-nosolo').checked = g.nosolo;
   document.getElementById('e-played').checked = g.played;
+  document.getElementById('e-limited').checked = !!g.limited;
+  document.getElementById('e-limit').value = g.limit || '';
+  document.getElementById('e-limit-wrap').style.display = g.limited ? 'block' : 'none';
   document.getElementById('edit-modal').classList.add('open');
 }
 
@@ -1432,6 +1442,15 @@ async function saveEdit() {
   const idx = games.findIndex(x => x.id === editingId);
   if (idx === -1) return;
 
+  const limited = document.getElementById('e-limited').checked;
+  const limitInput = document.getElementById('e-limit').value.trim();
+  const limit = limited && limitInput ? parseInt(limitInput, 10) : null;
+
+  if (limited && !limit) {
+    showToast('Indica el número máximo de jugadores 👀', true);
+    return;
+  }
+
   const updated = {
     name:    document.getElementById('e-name').value.trim() || games[idx].name,
     genre:   document.getElementById('e-genre').value   || games[idx].genre,
@@ -1441,7 +1460,9 @@ async function saveEdit() {
     link:    document.getElementById('e-link').value.trim(),
     warning: document.getElementById('e-warn').value.trim(),
     nosolo:  document.getElementById('e-nosolo').checked,
-    played:  document.getElementById('e-played').checked
+    played:  document.getElementById('e-played').checked,
+    limited,
+    limit
   };
 
   try {

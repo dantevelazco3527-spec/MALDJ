@@ -478,6 +478,8 @@ const fbApp = initializeApp(firebaseConfig);
     width: min(560px, 100%);
     max-height: 90vh;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
     padding: 28px;
     display: flex;
     flex-direction: column;

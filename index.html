@@ -713,7 +713,7 @@ const fbApp = initializeApp(firebaseConfig);
         <button class="filter-btn" onclick="setFilter('accion', this)">⚔️ Acción</button>
         <button class="filter-btn" onclick="setFilter('aventura', this)">🗺️ Aventura</button>
         <button class="filter-btn" onclick="setFilter('carreras', this)">🏎️ Carreras</button>
-        <button class="filter-btm" onclick="setFilter('Casual', this)">🤙 Casual</button>
+        <button class="filter-btm" onclick="setFilter('casual', this)">🤙 Casual</button>
         <button class="filter-btn" onclick="setFilter('disparos', this)">🔫 Disparos</button>
         <button class="filter-btn" onclick="setFilter('escape', this)">🚪 Escape</button>
         <button class="filter-btn" onclick="setFilter('exploración', this)">🔦 Exploración</button>
@@ -809,9 +809,16 @@ const fbApp = initializeApp(firebaseConfig);
           <textarea class="form-textarea" id="r-played-opinion" placeholder="¿Qué tal estuvo? ¿Para qué queda?" style="min-height:64px"></textarea>
         </div>
 
+        <div class="checkbox-group">
+          <input type="checkbox" id="r-limited" onchange="document.getElementById('r-limit-wrap').style.display = this.checked ? 'block' : 'none'" />
+          <label for="r-limited">¿Tiene un número limitado de jugadores?</label>
+        </div>
+        <div class="form-group" id="r-limit-wrap" style="display:none">
+          <input type="number" class="form-input" id="r-limit" min="1" placeholder="¿Cuántos jugadores como máximo?" />
+        </div>
+
         <div class="form-actions">
           <button class="btn-cancel" onclick="clearForm()">Limpiar</button>
-          <button class="btn-submit" onclick="submitGame()">Agregar juego 🔥</button>
         </div>
       </div>
     </div>
@@ -843,16 +850,6 @@ const fbApp = initializeApp(firebaseConfig);
           <div class="form-group">
             <label class="form-label">Quién postula <span class="required">*</span></label>
             <input type="text" class="form-input" id="s-who" placeholder="Tu nombre o apodo" />
-          </div>
-        </div>
-
-        <div class="form-group" style="margin-top:12px">
-          <label class="form-label">
-            <input type="checkbox" id="s-limited" onchange="document.getElementById('s-limit-wrap').style.display = this.checked ? 'block' : 'none'" />
-            ¿Tiene un número limitado de jugadores?
-          </label>
-          <div id="s-limit-wrap" style="display:none; margin-top:8px">
-            <input type="number" class="form-input" id="s-limit" min="1" placeholder="¿Cuántos jugadores como máximo?" />
           </div>
         </div>
 
@@ -1310,6 +1307,8 @@ function renderGames() {
         <span class="badge ${g.played ? 'badge-played' : 'badge-unplayed'}">${g.played ? '✅ Jugado' : '⏳ Sin jugar'}</span>
         ${g.warning ? `<span class="badge badge-warning">⚠️ Contenido sensible</span>` : ''}
         ${g.nosolo ? `<span class="badge badge-nosolo">🖥️ Sin multi / plataformas limitadas</span>` : ''}
+        ${g.limited && g.limit ? `<span class="badge badge-nosolo">👥 Máximo 
+        ${g.limit} jugador${g.limit !== 1 ? 'es' : ''}</span>` : ''}
       </div>
 
       <div class="game-desc">${escHtml(g.desc)}</div>
@@ -1341,13 +1340,15 @@ document.getElementById('r-played').addEventListener('change', function() {
 });
 
 function clearForm() {
-  ['r-name','r-genre','r-desc','r-opinion','r-who','r-link','r-warn','r-played-opinion'].forEach(id => {
+  ['r-name','r-genre','r-desc','r-opinion','r-who','r-link','r-warn','r-played-opinion','r-limit'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
   }                                                                                             );
   document.getElementById('r-nosolo').checked = false;
   document.getElementById('r-played').checked = false;
   document.getElementById('r-played-opinion-group').style.display = 'none';
+  document.getElementById('r-limited').checked = false;
+  document.getElementById('r-limit-wrap').style.display = 'none';
 }
 
   async function submitGame() {
@@ -1358,6 +1359,15 @@ function clearForm() {
 
   if (!name || !genre || !desc || !who) {
     showToast('Completa los campos obligatorios (*) 👀', true);
+    return;
+  }
+
+  const limited = document.getElementById('r-limited').checked;
+  const limitInput = document.getElementById('r-limit').value.trim();
+  const limit = limited && limitInput ? parseInt(limitInput, 10) : null;
+
+  if (limited && !limit) {
+    showToast('Indica el número máximo de jugadores 👀', true);
     return;
   }
 
@@ -1375,7 +1385,9 @@ function clearForm() {
     link:    document.getElementById('r-link').value.trim(),
     warning: document.getElementById('r-warn').value.trim(),
     nosolo:  document.getElementById('r-nosolo').checked,
-    played
+    played,
+    limited,
+    limit
   };
 
   try {
@@ -1633,7 +1645,6 @@ function renderSuggestionsList() {
       </div>
       <div style="font-size:0.8rem;color:var(--muted);margin-bottom:10px">
         Postulado por: ${escHtml(s.who)}
-        ${s.limited && s.limit ? `<br>👥 Máximo ${s.limit} jugador${s.limit !== 1 ? 'es' : ''}` : ''}
       </div>
       <div class="form-actions">
         <button class="btn-submit" ${voted.includes(s.id) ? 'disabled' : ''} onclick="voteSuggestion('${s.id}')">
@@ -1647,27 +1658,17 @@ function renderSuggestionsList() {
 async function submitSuggestion() {
   const name = document.getElementById('s-name').value.trim();
   const who  = document.getElementById('s-who').value.trim();
-  const limited = document.getElementById('s-limited').checked;
-  const limitInput = document.getElementById('s-limit').value.trim();
-  const limit = limited && limitInput ? parseInt(limitInput, 10) : null;
 
   if (!name || !who) {
     showToast('Completa nombre y quién postula 👀', true);
     return;
   }
-  if (limited && !limit) {
-    showToast('Indica el número máximo de jugadores 👀', true);
-    return;
-  }
 
   const { suggestionsCol, addDoc } = window.__fb;
   try {
-    await addDoc(suggestionsCol, { name, who, votes: 0, limited, limit });
+    await addDoc(suggestionsCol, { name, who, votes: 0 });
     document.getElementById('s-name').value = '';
     document.getElementById('s-who').value = '';
-    document.getElementById('s-limited').checked = false;
-    document.getElementById('s-limit').value = '';
-    document.getElementById('s-limit-wrap').style.display = 'none';
     showToast('¡Postulado! 🔥');
     loadSuggestions();
   } catch (err) {
